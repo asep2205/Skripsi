@@ -46,11 +46,14 @@ if (isset($_POST['submit_laporan'])) {
         }
     }
 
-    // Tentukan label berdasarkan perbandingan poin dari aturan yang cocok
-    if ($total_poin_cocok_punishment > $total_poin_cocok_reward) {
+    // Tentukan label: bandingkan point TERTINGGI dari masing-masing sisi
+    $poin_reward_tertinggi = $reward_terbaik ? (int)$reward_terbaik['poin'] : 0;
+    $poin_punishment_tertinggi = $punishment_terbaik ? (int)$punishment_terbaik['poin'] : 0;
+
+    if ($poin_punishment_tertinggi > $poin_reward_tertinggi) {
         $label_hasil = 'Punishment';
         $aturan = $punishment_terbaik;
-    } elseif ($total_poin_cocok_reward > $total_poin_cocok_punishment) {
+    } elseif ($poin_reward_tertinggi > $poin_punishment_tertinggi) {
         $label_hasil = 'Reward';
         $aturan = $reward_terbaik;
     } else {
