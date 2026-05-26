@@ -22,12 +22,27 @@ if (isset($_POST['submit_laporan'])) {
     $label_hasil = klasifikasi_naive_bayes($conn, $teks_laporan, $poin_reward_lama, $poin_punishment_lama);
     
     // --- Langkah 5: Cocokkan dengan tabel master poin terdekat ---
-    // Pencarian sederhana: ambil poin default pertama berdasarkan label hasil klasifikasi
-    $query_aturan = mysqli_query($conn, "SELECT * FROM master_poin WHERE jenis = '$label_hasil' LIMIT 1");
-    $aturan = mysqli_fetch_assoc($query_aturan);
-    
-    $id_aturan = $aturan['id_aturan'];
-    $poin_didapat = $aturan['poin'];
+    // Cari aturan yang teksnya benar-benar muncul di dalam laporan (strpos)
+    $query_aturan = mysqli_query($conn, "SELECT * FROM master_poin WHERE jenis = '$label_hasil'");
+    $aturan = null;
+    $id_aturan = null;
+    $poin_didapat = 0;
+    $aturan_pertama = null;
+    while ($row = mysqli_fetch_assoc($query_aturan)) {
+        if (!$aturan_pertama) $aturan_pertama = $row;
+        if (strpos(strtolower($teks_laporan), strtolower($row['nama_perilaku'])) !== false) {
+            $aturan = $row;
+            $id_aturan = $row['id_aturan'];
+            $poin_didapat = $row['poin'];
+            break;
+        }
+    }
+    // Fallback: jika tidak ada aturan yang cocok, gunakan aturan pertama
+    if (!$aturan && $aturan_pertama) {
+        $aturan = $aturan_pertama;
+        $id_aturan = $aturan['id_aturan'];
+        $poin_didapat = $aturan['poin'];
+    }
     
     // --- Langkah 6: Simpan Transaksi Laporan ---
     $insert = mysqli_query($conn, "INSERT INTO laporan_perilaku (id_siswa, id_user, teks_laporan, label_prediksi, id_aturan_tercocok, poin_didapat) 
