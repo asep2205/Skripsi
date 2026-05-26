@@ -17,50 +17,100 @@ if (isset($_POST['submit_laporan'])) {
     $poin_reward_lama = $data_siswa['total_poin_reward'];
     $poin_punishment_lama = $data_siswa['total_poin_punishment'];
     
-    // --- Langkah 1 s.d 4: Menjalankan Klasifikasi Otomatis via Engine ---
-    // Sertakan riwayat poin siswa sebagai pertimbangan NLP
-    $label_hasil = klasifikasi_naive_bayes($conn, $teks_laporan, $poin_reward_lama, $poin_punishment_lama);
-    
-    // --- Langkah 5: Cocokkan dengan tabel master poin terdekat ---
-    // Cari aturan yang teksnya benar-benar muncul di dalam laporan (strpos)
-    $query_aturan = mysqli_query($conn, "SELECT * FROM master_poin WHERE jenis = '$label_hasil'");
-    $aturan = null;
-    $id_aturan = null;
-    $poin_didapat = 0;
-    $aturan_pertama = null;
-    while ($row = mysqli_fetch_assoc($query_aturan)) {
-        if (!$aturan_pertama) $aturan_pertama = $row;
+    // =====================================================================
+    // KOMBINASI REWARD + PUNISHMENT: Cocokkan SEMUA aturan dari master_poin
+    // =====================================================================
+    $query_all = mysqli_query($conn, "SELECT * FROM master_poin");
+    $total_poin_cocok_reward = 0;
+    $total_poin_cocok_punishment = 0;
+    $daftar_reward_tercocok = [];
+    $daftar_punishment_tercocok = [];
+    $reward_terbaik = null;
+    $punishment_terbaik = null;
+
+    while ($row = mysqli_fetch_assoc($query_all)) {
         if (strpos(strtolower($teks_laporan), strtolower($row['nama_perilaku'])) !== false) {
-            $aturan = $row;
-            $id_aturan = $row['id_aturan'];
-            $poin_didapat = $row['poin'];
-            break;
+            if ($row['jenis'] == 'Reward') {
+                $total_poin_cocok_reward += $row['poin'];
+                $daftar_reward_tercocok[] = $row;
+                if (!$reward_terbaik || $row['poin'] > $reward_terbaik['poin']) {
+                    $reward_terbaik = $row;
+                }
+            } else {
+                $total_poin_cocok_punishment += $row['poin'];
+                $daftar_punishment_tercocok[] = $row;
+                if (!$punishment_terbaik || $row['poin'] > $punishment_terbaik['poin']) {
+                    $punishment_terbaik = $row;
+                }
+            }
         }
     }
-    // Fallback: jika tidak ada aturan yang cocok, gunakan aturan pertama
-    if (!$aturan && $aturan_pertama) {
-        $aturan = $aturan_pertama;
-        $id_aturan = $aturan['id_aturan'];
-        $poin_didapat = $aturan['poin'];
+
+    // Tentukan label berdasarkan perbandingan poin dari aturan yang cocok
+    if ($total_poin_cocok_punishment > $total_poin_cocok_reward) {
+        $label_hasil = 'Punishment';
+        $aturan = $punishment_terbaik;
+    } elseif ($total_poin_cocok_reward > $total_poin_cocok_punishment) {
+        $label_hasil = 'Reward';
+        $aturan = $reward_terbaik;
+    } else {
+        // Jika seri atau tidak ada yang cocok → fallback ke NLP
+        $label_hasil = klasifikasi_naive_bayes($conn, $teks_laporan, $poin_reward_lama, $poin_punishment_lama);
+        // Cari aturan sesuai label hasil NLP
+        $query_label = mysqli_query($conn, "SELECT * FROM master_poin WHERE jenis = '$label_hasil'");
+        $aturan = null;
+        while ($row = mysqli_fetch_assoc($query_label)) {
+            if (!$aturan) $aturan = $row;
+            if (strpos(strtolower($teks_laporan), strtolower($row['nama_perilaku'])) !== false) {
+                $aturan = $row;
+                break;
+            }
+        }
     }
+
+    $id_aturan = $aturan ? $aturan['id_aturan'] : null;
+    $poin_didapat = $aturan ? $aturan['poin'] : 0;
     
-    // --- Langkah 6: Simpan Transaksi Laporan ---
+    // --- Simpan Transaksi Laporan ---
     $insert = mysqli_query($conn, "INSERT INTO laporan_perilaku (id_siswa, id_user, teks_laporan, label_prediksi, id_aturan_tercocok, poin_didapat) 
                VALUES ('$id_siswa', '$id_user_login', '$teks_laporan', '$label_hasil', '$id_aturan', '$poin_didapat')");
     
     if ($insert) {
-        // --- Langkah 7: Update Akumulasi Profil Poin Siswa ---
+        // --- Update Akumulasi Profil Poin Siswa ---
         if ($label_hasil == 'Reward') {
             mysqli_query($conn, "UPDATE siswa SET total_poin_reward = total_poin_reward + $poin_didapat WHERE id_siswa = '$id_siswa'");
         } else {
             mysqli_query($conn, "UPDATE siswa SET total_poin_punishment = total_poin_punishment + $poin_didapat WHERE id_siswa = '$id_siswa'");
         }
         
-        // --- Langkah 8: Ambil data siswa setelah update ---
+        // --- Ambil data siswa setelah update ---
         $query_siswa_baru = mysqli_query($conn, "SELECT * FROM siswa WHERE id_siswa = '$id_siswa'");
         $data_siswa_baru = mysqli_fetch_assoc($query_siswa_baru);
         
-        // Tentukan keputusan akhir berdasarkan perbandingan poin reward vs punishment
+        // --- Bangun notifikasi detail ---
+        $detail_reward = '';
+        if (count($daftar_reward_tercocok) > 0) {
+            $detail_reward = '<div style="margin-top:8px;"><strong>Reward:</strong> ';
+            $reward_items = [];
+            foreach ($daftar_reward_tercocok as $r) {
+                $reward_items[] = "{$r['nama_perilaku']} (+{$r['poin']} poin)";
+            }
+            $detail_reward .= implode('<br>', $reward_items);
+            $detail_reward .= "<br><em>Total Reward: {$total_poin_cocok_reward} poin</em></div>";
+        }
+        
+        $detail_punishment = '';
+        if (count($daftar_punishment_tercocok) > 0) {
+            $detail_punishment = '<div style="margin-top:5px;"><strong>Punishment:</strong> ';
+            $puni_items = [];
+            foreach ($daftar_punishment_tercocok as $p) {
+                $puni_items[] = "{$p['nama_perilaku']} (-{$p['poin']} poin)";
+            }
+            $detail_punishment .= implode('<br>', $puni_items);
+            $detail_punishment .= "<br><em>Total Punishment: {$total_poin_cocok_punishment} poin</em></div>";
+        }
+        
+        // Tentukan keputusan akhir dari perbandingan
         $reward_total = $data_siswa_baru['total_poin_reward'];
         $punishment_total = $data_siswa_baru['total_poin_punishment'];
         if ($reward_total > $punishment_total) {
@@ -72,8 +122,10 @@ if (isset($_POST['submit_laporan'])) {
         }
         
         $notif_pesan = "<div class='alert success'><strong>Sistem Berhasil Memproses!</strong><br>
-                        Hasil Analisis NLP: <strong>$label_hasil</strong><br>
-                        Tindakan Terdeteksi: {$aturan['nama_perilaku']} (+$poin_didapat Poin)<br>
+                        Hasil Analisis: <strong>$label_hasil</strong><br>
+                        Tindakan: {$aturan['nama_perilaku']} ($poin_didapat Poin)
+                        {$detail_reward}
+                        {$detail_punishment}
                         <hr>
                         <strong>Keputusan Akhir: {$keputusan}</strong></div>";
                         
