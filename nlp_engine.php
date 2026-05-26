@@ -90,7 +90,7 @@ function preprocess_text($text) {
 }
 
 // Klasifikasi Naive Bayes Berbasis Kemunculan Kata (Term Frequency Sederhana)
-function klasifikasi_naive_bayes($conn, $teks_input) {
+function klasifikasi_naive_bayes($conn, $teks_input, $poin_reward_siswa = 0, $poin_punishment_siswa = 0) {
     $tokens = preprocess_text($teks_input);
     
     // 1. AMBIL DATASET TRAINING (Proses Naive Bayes Standar)
@@ -173,8 +173,27 @@ function klasifikasi_naive_bayes($conn, $teks_input) {
     elseif ($total_poin_positif > $total_poin_negatif) {
         return 'Reward';
     }
+
+    // =========================================================================
+    // 3. PERTIMBANGAN HISTORIS POIN SISWA (Perbandingan Reward vs Punishment)
+    // =========================================================================
+    // Jika siswa memiliki riwayat poin, beri bias pada skor Naive Bayes
+    $total_historis = $poin_reward_siswa + $poin_punishment_siswa;
+    if ($total_historis > 0) {
+        // Hitung selisih poin yang dinormalisasi (rentang -1 s.d 1)
+        $selisih = $poin_punishment_siswa - $poin_reward_siswa;
+        $normalized_bias = $selisih / $total_historis;
+        
+        // Konversi ke skala log untuk ditambahkan ke log-probability
+        // Semakin besar bias, semakin kuat pengaruh riwayat siswa
+        $bobot_historis = $normalized_bias * log($total_historis + 1) / 10;
+        
+        $score_negatif += $bobot_historis;
+        $score_positif -= $bobot_historis;
+    }
     
     // Jika tidak ada kecocokan poin di tabel master (atau poin seri), kembali ke hasil murni Naive Bayes
+    // (sudah ditambah pertimbangan historis poin siswa)
     return ($score_positif >= $score_negatif) ? 'Reward' : 'Punishment';
 }
 ?>

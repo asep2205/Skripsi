@@ -36,6 +36,7 @@ include 'config.php';
                 <th>Kelas</th>
                 <th>Poin Reward (+)</th>
                 <th>Poin Punishment (-)</th>
+                <th>Keputusan</th>
                 <th>Status / Tindak Lanjut</th>
             </tr>
         </thead>
@@ -43,10 +44,22 @@ include 'config.php';
             <?php
             $query = mysqli_query($conn, "SELECT * FROM siswa");
             while ($row = mysqli_fetch_assoc($query)) {
+                $reward = $row['total_poin_reward'];
+                $punishment = $row['total_poin_punishment'];
+                
+                // Keputusan berdasarkan perbandingan poin reward vs punishment
+                if ($reward > $punishment) {
+                    $keputusan = "<span class='badge badge-success'>Reward</span>";
+                } elseif ($punishment > $reward) {
+                    $keputusan = "<span class='badge badge-danger'>Punishment</span>";
+                } else {
+                    $keputusan = "<span class='badge badge-warning'>Seimbang</span>";
+                }
+                
                 // Logika status ambang batas
-                if ($row['total_poin_punishment'] >= 50) {
+                if ($punishment >= 50) {
                     $status = "<span class='badge badge-danger'>Butuh Tindak Lanjut BK</span>";
-                } elseif ($row['total_poin_punishment'] >= 20) {
+                } elseif ($punishment >= 20) {
                     $status = "<span class='badge badge-warning'>Peringatan Ringan</span>";
                 } else {
                     $status = "<span class='badge badge-success'>Aman</span>";
@@ -56,8 +69,9 @@ include 'config.php';
                         <td>{$row['nis']}</td>
                         <td>{$row['nama_siswa']}</td>
                         <td>{$row['kelas']}</td>
-                        <td><strong style='color:green;'>+{$row['total_poin_reward']}</strong></td>
-                        <td><strong style='color:red;'>-{$row['total_poin_punishment']}</strong></td>
+                        <td><strong style='color:green;'>+{$reward}</strong></td>
+                        <td><strong style='color:red;'>-{$punishment}</strong></td>
+                        <td>$keputusan</td>
                         <td>$status</td>
                       </tr>";
             }

@@ -11,8 +11,15 @@ if (isset($_POST['submit_laporan'])) {
     $id_siswa = $_POST['id_siswa'];
     $teks_laporan = $_POST['teks_laporan'];
     
+    // --- Ambil riwayat poin siswa sebelum diproses ---
+    $query_siswa = mysqli_query($conn, "SELECT * FROM siswa WHERE id_siswa = '$id_siswa'");
+    $data_siswa = mysqli_fetch_assoc($query_siswa);
+    $poin_reward_lama = $data_siswa['total_poin_reward'];
+    $poin_punishment_lama = $data_siswa['total_poin_punishment'];
+    
     // --- Langkah 1 s.d 4: Menjalankan Klasifikasi Otomatis via Engine ---
-    $label_hasil = klasifikasi_naive_bayes($conn, $teks_laporan);
+    // Sertakan riwayat poin siswa sebagai pertimbangan NLP
+    $label_hasil = klasifikasi_naive_bayes($conn, $teks_laporan, $poin_reward_lama, $poin_punishment_lama);
     
     // --- Langkah 5: Cocokkan dengan tabel master poin terdekat ---
     // Pencarian sederhana: ambil poin default pertama berdasarkan label hasil klasifikasi
@@ -34,17 +41,30 @@ if (isset($_POST['submit_laporan'])) {
             mysqli_query($conn, "UPDATE siswa SET total_poin_punishment = total_poin_punishment + $poin_didapat WHERE id_siswa = '$id_siswa'");
         }
         
-        // --- Langkah 8: Cek Ambang Batas Poin (Threshold Notification) ---
-        $query_siswa = mysqli_query($conn, "SELECT * FROM siswa WHERE id_siswa = '$id_siswa'");
-        $data_siswa = mysqli_fetch_assoc($query_siswa);
+        // --- Langkah 8: Ambil data siswa setelah update ---
+        $query_siswa_baru = mysqli_query($conn, "SELECT * FROM siswa WHERE id_siswa = '$id_siswa'");
+        $data_siswa_baru = mysqli_fetch_assoc($query_siswa_baru);
+        
+        // Tentukan keputusan akhir berdasarkan perbandingan poin reward vs punishment
+        $reward_total = $data_siswa_baru['total_poin_reward'];
+        $punishment_total = $data_siswa_baru['total_poin_punishment'];
+        if ($reward_total > $punishment_total) {
+            $keputusan = "<strong style='color:green;'>REWARD</strong> — Poin Reward ({$reward_total}) > Poin Punishment ({$punishment_total})";
+        } elseif ($punishment_total > $reward_total) {
+            $keputusan = "<strong style='color:red;'>PUNISHMENT</strong> — Poin Punishment ({$punishment_total}) > Poin Reward ({$reward_total})";
+        } else {
+            $keputusan = "<strong style='color:orange;'>SEIMBANG</strong> — Poin Reward ({$reward_total}) = Poin Punishment ({$punishment_total})";
+        }
         
         $notif_pesan = "<div class='alert success'><strong>Sistem Berhasil Memproses!</strong><br>
                         Hasil Analisis NLP: <strong>$label_hasil</strong><br>
-                        Tindakan Terdeteksi: {$aturan['nama_perilaku']} (+$poin_didapat Poin).</div>";
+                        Tindakan Terdeteksi: {$aturan['nama_perilaku']} (+$poin_didapat Poin)<br>
+                        <hr>
+                        <strong>Keputusan Akhir: {$keputusan}</strong></div>";
                         
         // Threshold check: Jika poin punishment mencapai atau melebihi 50 poin
-        if ($data_siswa['total_poin_punishment'] >= 50) {
-            $notif_pesan .= "<div class='alert danger'><strong>⚠️ NOTIFIKASI TINDAK LANJUT:</strong> Poin pelanggaran siswa <strong>{$data_siswa['nama_siswa']}</strong> telah mencapai {$data_siswa['total_poin_punishment']} poin. Segera hubungi Guru BK!</div>";
+        if ($punishment_total >= 50) {
+            $notif_pesan .= "<div class='alert danger'><strong>⚠️ NOTIFIKASI TINDAK LANJUT:</strong> Poin pelanggaran siswa <strong>{$data_siswa_baru['nama_siswa']}</strong> telah mencapai {$punishment_total} poin. Segera hubungi Guru BK!</div>";
         }
     } else {
         $notif_pesan = "<div class='alert danger'>Gagal memproses laporan.</div>";
