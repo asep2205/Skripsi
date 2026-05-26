@@ -143,19 +143,20 @@ function klasifikasi_naive_bayes($conn, $teks_input, $poin_reward_siswa = 0, $po
     }
 
     // =========================================================================
-    // 2. INTEGRASI BOBOT POIN DARI TABEL MASTER ATURAN (Berdasarkan Gambar)
+    // 2. INTEGRASI BOBOT POIN DARI TABEL MASTER ATURAN
+    //    (Mencocokkan kata kunci dari teks input dengan aturan yang tersimpan)
     // =========================================================================
     
     $total_poin_positif = 0;
     $total_poin_negatif = 0;
 
     // Ambil semua aturan dari tabel aturan/master poin
-    $query_aturan = mysqli_query($conn, "SELECT jenis, nama_perilaku, poin FROM master_poin");
+    $query_aturan = mysqli_query($conn, "SELECT id_aturan, jenis, nama_perilaku, poin FROM master_poin");
     
     while ($aturan = mysqli_fetch_assoc($query_aturan)) {
         $nama_perilaku = strtolower($aturan['nama_perilaku']);
         
-        // Cek apakah ada kata kunci perilaku di dalam teks input
+        // Cek 1: Apakah teks aturan lengkap muncul di dalam teks input (pencocokan eksak)
         if (strpos(strtolower($teks_input), $nama_perilaku) !== false) {
             if ($aturan['jenis'] == 'Reward') {
                 $total_poin_positif += $aturan['poin'];
@@ -177,23 +178,22 @@ function klasifikasi_naive_bayes($conn, $teks_input, $poin_reward_siswa = 0, $po
     // =========================================================================
     // 3. PERTIMBANGAN HISTORIS POIN SISWA (Perbandingan Reward vs Punishment)
     // =========================================================================
-    // Jika siswa memiliki riwayat poin, beri bias pada skor Naive Bayes
+    // Jika siswa memiliki riwayat poin, beri bias ringan pada skor Naive Bayes
     $total_historis = $poin_reward_siswa + $poin_punishment_siswa;
     if ($total_historis > 0) {
-        // Hitung selisih poin yang dinormalisasi (rentang -1 s.d 1)
         $selisih = $poin_punishment_siswa - $poin_reward_siswa;
         $normalized_bias = $selisih / $total_historis;
         
-        // Konversi ke skala log untuk ditambahkan ke log-probability
-        // Semakin besar bias, semakin kuat pengaruh riwayat siswa
-        $bobot_historis = $normalized_bias * log($total_historis + 1) / 10;
+        // Bias historis dibuat sangat kecil agar tidak mudah mengalahkan hasil NLP
+        // Hanya sebagai sinyal pelengkap, bukan penentu utama
+        $bobot_historis = $normalized_bias * 0.05;
         
         $score_negatif += $bobot_historis;
         $score_positif -= $bobot_historis;
     }
     
     // Jika tidak ada kecocokan poin di tabel master (atau poin seri), kembali ke hasil murni Naive Bayes
-    // (sudah ditambah pertimbangan historis poin siswa)
+    // (sudah ditambah pertimbangan historis poin siswa yang ringan)
     return ($score_positif >= $score_negatif) ? 'Reward' : 'Punishment';
 }
 ?>

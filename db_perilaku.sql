@@ -744,7 +744,13 @@ INSERT INTO `dataset_training` (`id_data`, `teks_sampel`, `label`) VALUES
 (704, 'Siswa berhasil mendapatkan penghargaan akademik sekolah', 'Reward'),
 (705, 'Siswa memperoleh hasil pembelajaran yang sangat baik', 'Reward'),
 (706, 'Siswa menunjukkan kemampuan unggul dalam bidang akademik', 'Reward'),
-(707, 'Siswa berhasil mencapai prestasi belajar yang membanggakan', 'Reward');
+(707, 'Siswa berhasil mencapai prestasi belajar yang membanggakan', 'Reward'),
+(708, 'siswa ikut merapikan buku di perpustakaan sekolah', 'Reward'),
+(709, 'siswa membantu petugas merapikan buku perpustakaan', 'Reward'),
+(710, 'siswa merapikan buku perpustakaan dengan rapi', 'Reward'),
+(711, 'siswa dengan inisiatif merapikan buku di perpustakaan', 'Reward'),
+(712, 'siswa membersihkan dan merapikan rak buku perpustakaan', 'Reward'),
+(713, 'siswa membantu merapikan buku pelajaran di perpustakaan', 'Reward');
 
 -- --------------------------------------------------------
 
@@ -1047,7 +1053,13 @@ INSERT INTO `master_poin` (`id_aturan`, `jenis`, `nama_perilaku`, `poin`) VALUES
 (256, 'Reward', 'Kehadiran Aktif', 20),
 (257, 'Reward', 'Kehadiran Penuh', 20),
 (258, 'Reward', 'Konsisten Hadir', 20),
-(259, 'Reward', 'Disiplin Kehadiran', 20);
+(259, 'Reward', 'Disiplin Kehadiran', 20),
+(260, 'Reward', 'merapikan buku di perpustakaan', 20),
+(261, 'Reward', 'membantu merapikan buku perpustakaan', 20),
+(262, 'Reward', 'merapikan buku dan membersihkan perpustakaan', 20),
+(263, 'Reward', 'merapikan buku perpustakaan', 20),
+(264, 'Reward', 'siswa merapikan buku di perpustakaan', 20),
+(265, 'Reward', 'membantu merapikan buku di perpustakaan', 20);
 
 -- --------------------------------------------------------
 
