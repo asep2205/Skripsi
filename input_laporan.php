@@ -74,13 +74,17 @@ if (isset($_POST['submit_laporan'])) {
                 }
             }
         }
+        // Jika tidak ada aturan yang cocok langsung, cari via training sample terdekat
+        if (!$aturan) {
+            $aturan = cari_aturan_via_training($conn, $teks_laporan, $label_hasil);
+        }
         // Jika tetap tidak ada aturan yang cocok dan NLP tidak mengenali teks → tolak
         if (!$aturan && !teks_dikenali_oleh_training($conn, $teks_laporan)) {
             $notif_pesan = "<div class='alert danger'><strong>Gagal Memproses!</strong> Teks laporan tidak dikenali. Tidak ada aturan maupun data training yang cocok dengan deskripsi perilaku yang dimasukkan. Silakan perbaiki deskripsi laporan.</div>";
             $tolak_laporan = true;
         }
         if (!$aturan && !$tolak_laporan) {
-            $query_first = mysqli_query($conn, "SELECT * FROM master_poin WHERE jenis = '$label_hasil' LIMIT 1");
+            $query_first = mysqli_query($conn, "SELECT * FROM master_poin WHERE jenis = '$label_hasil' ORDER BY poin DESC LIMIT 1");
             $aturan = mysqli_fetch_assoc($query_first);
         }
     }

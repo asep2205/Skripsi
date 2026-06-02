@@ -216,4 +216,36 @@ function teks_dikenali_oleh_training($conn, $teks_input) {
     }
     return false;
 }
+
+// Cari aturan master_poin berdasarkan training sample paling mirip dengan input
+function cari_aturan_via_training($conn, $teks_input, $label_hasil) {
+    $input_tokens = preprocess_text($teks_input);
+    if (empty($input_tokens)) return null;
+
+    // Cari training sample dengan word overlap tertinggi
+    $query = mysqli_query($conn, "SELECT teks_sampel FROM dataset_training WHERE label = '$label_hasil'");
+    $best_score = 0;
+    $best_sample = '';
+
+    while ($row = mysqli_fetch_assoc($query)) {
+        $sample_tokens = preprocess_text($row['teks_sampel']);
+        $overlap = count(array_intersect($input_tokens, $sample_tokens));
+        if ($overlap > $best_score) {
+            $best_score = $overlap;
+            $best_sample = $row['teks_sampel'];
+        }
+    }
+
+    if ($best_score == 0) return null;
+
+    // Cari aturan master_poin yang cocok dengan training sample tsb, urut poin tertinggi
+    $query_rules = mysqli_query($conn, "SELECT * FROM master_poin WHERE jenis = '$label_hasil' ORDER BY poin DESC");
+    while ($rule = mysqli_fetch_assoc($query_rules)) {
+        if (strpos(strtolower($best_sample), strtolower($rule['nama_perilaku'])) !== false) {
+            return $rule;
+        }
+    }
+
+    return null;
+}
 ?>
