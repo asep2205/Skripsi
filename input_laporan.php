@@ -46,28 +46,35 @@ if (isset($_POST['submit_laporan'])) {
         }
     }
 
-    // Tentukan label: bandingkan point TERTINGGI dari masing-masing sisi
-    $poin_reward_tertinggi = $reward_terbaik ? (int)$reward_terbaik['poin'] : 0;
-    $poin_punishment_tertinggi = $punishment_terbaik ? (int)$punishment_terbaik['poin'] : 0;
-
-    if ($poin_punishment_tertinggi > $poin_reward_tertinggi) {
+    // Tentukan label: bandingkan TOTAL point dari masing-masing sisi
+    if ($total_poin_cocok_punishment > $total_poin_cocok_reward) {
         $label_hasil = 'Punishment';
         $aturan = $punishment_terbaik;
-    } elseif ($poin_reward_tertinggi > $poin_punishment_tertinggi) {
+    } elseif ($total_poin_cocok_reward > $total_poin_cocok_punishment) {
         $label_hasil = 'Reward';
         $aturan = $reward_terbaik;
     } else {
         // Jika seri atau tidak ada yang cocok → fallback ke NLP
         $label_hasil = klasifikasi_naive_bayes($conn, $teks_laporan, $poin_reward_lama, $poin_punishment_lama);
-        // Cari aturan sesuai label hasil NLP
-        $query_label = mysqli_query($conn, "SELECT * FROM master_poin WHERE jenis = '$label_hasil'");
         $aturan = null;
-        while ($row = mysqli_fetch_assoc($query_label)) {
-            if (!$aturan) $aturan = $row;
-            if (strpos(strtolower($teks_laporan), strtolower($row['nama_perilaku'])) !== false) {
-                $aturan = $row;
-                break;
+        // Cari aturan dengan poin tertinggi sesuai label hasil NLP
+        if ($label_hasil == 'Reward' && !empty($daftar_reward_tercocok)) {
+            $aturan = $reward_terbaik;
+        } elseif ($label_hasil == 'Punishment' && !empty($daftar_punishment_tercocok)) {
+            $aturan = $punishment_terbaik;
+        }
+        if (!$aturan) {
+            $query_label = mysqli_query($conn, "SELECT * FROM master_poin WHERE jenis = '$label_hasil' ORDER BY poin DESC");
+            while ($row = mysqli_fetch_assoc($query_label)) {
+                if (strpos(strtolower($teks_laporan), strtolower($row['nama_perilaku'])) !== false) {
+                    $aturan = $row;
+                    break;
+                }
             }
+        }
+        if (!$aturan) {
+            $query_first = mysqli_query($conn, "SELECT * FROM master_poin WHERE jenis = '$label_hasil' LIMIT 1");
+            $aturan = mysqli_fetch_assoc($query_first);
         }
     }
 
