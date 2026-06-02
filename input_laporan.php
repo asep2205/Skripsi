@@ -46,6 +46,10 @@ if (isset($_POST['submit_laporan'])) {
         }
     }
 
+    // Cek apakah ada aturan yang cocok
+    $ada_aturan_tercocok = ($total_poin_cocok_reward > 0 || $total_poin_cocok_punishment > 0);
+    $tolak_laporan = false;
+
     // Tentukan label: bandingkan TOTAL point dari masing-masing sisi
     if ($total_poin_cocok_punishment > $total_poin_cocok_reward) {
         $label_hasil = 'Punishment';
@@ -72,6 +76,11 @@ if (isset($_POST['submit_laporan'])) {
                 }
             }
         }
+        // Jika tetap tidak ada aturan yang cocok dan tidak ada aturan awal yang cocok → tolak
+        if (!$aturan && !$ada_aturan_tercocok) {
+            $notif_pesan = "<div class='alert danger'><strong>Gagal Memproses!</strong> Teks laporan tidak dikenali. Tidak ada aturan maupun data training yang cocok dengan deskripsi perilaku yang dimasukkan. Silakan perbaiki deskripsi laporan.</div>";
+            $tolak_laporan = true;
+        }
         if (!$aturan) {
             $query_first = mysqli_query($conn, "SELECT * FROM master_poin WHERE jenis = '$label_hasil' LIMIT 1");
             $aturan = mysqli_fetch_assoc($query_first);
@@ -80,75 +89,79 @@ if (isset($_POST['submit_laporan'])) {
 
     $id_aturan = $aturan ? $aturan['id_aturan'] : null;
     $poin_didapat = $aturan ? $aturan['poin'] : 0;
-    
-    // --- Simpan Transaksi Laporan ---
-    $insert = mysqli_query($conn, "INSERT INTO laporan_perilaku (id_siswa, id_user, teks_laporan, label_prediksi, id_aturan_tercocok, poin_didapat) 
-               VALUES ('$id_siswa', '$id_user_login', '$teks_laporan', '$label_hasil', '$id_aturan', '$poin_didapat')");
-    
-    if ($insert) {
-        // --- Update Akumulasi Profil Poin Siswa ---
-        if ($label_hasil == 'Reward') {
-            mysqli_query($conn, "UPDATE siswa SET total_poin_reward = total_poin_reward + $poin_didapat WHERE id_siswa = '$id_siswa'");
-        } else {
-            mysqli_query($conn, "UPDATE siswa SET total_poin_punishment = total_poin_punishment + $poin_didapat WHERE id_siswa = '$id_siswa'");
-        }
-        
-        // --- Ambil data siswa setelah update ---
-        $query_siswa_baru = mysqli_query($conn, "SELECT * FROM siswa WHERE id_siswa = '$id_siswa'");
-        $data_siswa_baru = mysqli_fetch_assoc($query_siswa_baru);
-        
-        // --- Bangun notifikasi detail ---
-        $detail_reward = '';
-        if (count($daftar_reward_tercocok) > 0) {
-            $detail_reward = '<div style="margin-top:8px;"><strong>Reward:</strong> ';
-            $reward_items = [];
-            foreach ($daftar_reward_tercocok as $r) {
-                $reward_items[] = "{$r['nama_perilaku']} (+{$r['poin']} poin)";
-            }
-            $detail_reward .= implode('<br>', $reward_items);
-            $detail_reward .= "<br><em>Total Reward: {$total_poin_cocok_reward} poin</em></div>";
-        }
-        
-        $detail_punishment = '';
-        if (count($daftar_punishment_tercocok) > 0) {
-            $detail_punishment = '<div style="margin-top:5px;"><strong>Punishment:</strong> ';
-            $puni_items = [];
-            foreach ($daftar_punishment_tercocok as $p) {
-                $puni_items[] = "{$p['nama_perilaku']} (-{$p['poin']} poin)";
-            }
-            $detail_punishment .= implode('<br>', $puni_items);
-            $detail_punishment .= "<br><em>Total Punishment: {$total_poin_cocok_punishment} poin</em></div>";
-        }
-        
-        // Tentukan keputusan akhir sesuai hasil analisis laporan ini
-        if ($label_hasil == 'Reward') {
-            $keputusan = "<strong style='color:green;'>REWARD</strong> — Total poin Reward pada laporan ini ({$total_poin_cocok_reward}) > Total poin Punishment ({$total_poin_cocok_punishment})";
-        } elseif ($label_hasil == 'Punishment') {
-            $keputusan = "<strong style='color:red;'>PUNISHMENT</strong> — Total poin Punishment pada laporan ini ({$total_poin_cocok_punishment}) > Total poin Reward ({$total_poin_cocok_reward})";
-        } else {
-            $keputusan = "<strong style='color:orange;'>SEIMBANG</strong> — Poin Reward ({$total_poin_cocok_reward}) = Poin Punishment ({$total_poin_cocok_punishment})";
-        }
-        
-        // Tampilkan akumulasi total poin siswa (informasi tambahan)
-        $reward_total = $data_siswa_baru['total_poin_reward'];
-        $punishment_total = $data_siswa_baru['total_poin_punishment'];
-        $akumulasi_info = "Akumulasi Poin Siswa: Reward {$reward_total} | Punishment {$punishment_total}";
-        
-        $notif_pesan = "<div class='alert success'><strong>Sistem Berhasil Memproses!</strong><br>
-                        Hasil Analisis: <strong>$label_hasil</strong><br>
-                        Tindakan: {$aturan['nama_perilaku']} ($poin_didapat Poin)
-                        {$detail_reward}
-                        {$detail_punishment}
-                        <hr>
-                        <strong>Keputusan Akhir: {$keputusan}</strong><br>
-                        <small style='color:#666;'>{$akumulasi_info}</small></div>";
-                        
-        // Threshold check: Jika poin punishment mencapai atau melebihi 50 poin
-        if ($punishment_total >= 50) {
-            $notif_pesan .= "<div class='alert danger'><strong>⚠️ NOTIFIKASI TINDAK LANJUT:</strong> Poin pelanggaran siswa <strong>{$data_siswa_baru['nama_siswa']}</strong> telah mencapai {$punishment_total} poin. Segera hubungi Guru BK!</div>";
-        }
+
+    if ($tolak_laporan) {
+        // Laporan ditolak, tidak disimpan
     } else {
-        $notif_pesan = "<div class='alert danger'>Gagal memproses laporan.</div>";
+        // --- Simpan Transaksi Laporan ---
+        $insert = mysqli_query($conn, "INSERT INTO laporan_perilaku (id_siswa, id_user, teks_laporan, label_prediksi, id_aturan_tercocok, poin_didapat) 
+                   VALUES ('$id_siswa', '$id_user_login', '$teks_laporan', '$label_hasil', '$id_aturan', '$poin_didapat')");
+
+        if ($insert) {
+            // --- Update Akumulasi Profil Poin Siswa ---
+            if ($label_hasil == 'Reward') {
+                mysqli_query($conn, "UPDATE siswa SET total_poin_reward = total_poin_reward + $poin_didapat WHERE id_siswa = '$id_siswa'");
+            } else {
+                mysqli_query($conn, "UPDATE siswa SET total_poin_punishment = total_poin_punishment + $poin_didapat WHERE id_siswa = '$id_siswa'");
+            }
+
+            // --- Ambil data siswa setelah update ---
+            $query_siswa_baru = mysqli_query($conn, "SELECT * FROM siswa WHERE id_siswa = '$id_siswa'");
+            $data_siswa_baru = mysqli_fetch_assoc($query_siswa_baru);
+
+            // --- Bangun notifikasi detail ---
+            $detail_reward = '';
+            if (count($daftar_reward_tercocok) > 0) {
+                $detail_reward = '<div style="margin-top:8px;"><strong>Reward:</strong> ';
+                $reward_items = [];
+                foreach ($daftar_reward_tercocok as $r) {
+                    $reward_items[] = "{$r['nama_perilaku']} (+{$r['poin']} poin)";
+                }
+                $detail_reward .= implode('<br>', $reward_items);
+                $detail_reward .= "<br><em>Total Reward: {$total_poin_cocok_reward} poin</em></div>";
+            }
+
+            $detail_punishment = '';
+            if (count($daftar_punishment_tercocok) > 0) {
+                $detail_punishment = '<div style="margin-top:5px;"><strong>Punishment:</strong> ';
+                $puni_items = [];
+                foreach ($daftar_punishment_tercocok as $p) {
+                    $puni_items[] = "{$p['nama_perilaku']} (-{$p['poin']} poin)";
+                }
+                $detail_punishment .= implode('<br>', $puni_items);
+                $detail_punishment .= "<br><em>Total Punishment: {$total_poin_cocok_punishment} poin</em></div>";
+            }
+
+            // Tentukan keputusan akhir sesuai hasil analisis laporan ini
+            if ($label_hasil == 'Reward') {
+                $keputusan = "<strong style='color:green;'>REWARD</strong> — Total poin Reward pada laporan ini ({$total_poin_cocok_reward}) > Total poin Punishment ({$total_poin_cocok_punishment})";
+            } elseif ($label_hasil == 'Punishment') {
+                $keputusan = "<strong style='color:red;'>PUNISHMENT</strong> — Total poin Punishment pada laporan ini ({$total_poin_cocok_punishment}) > Total poin Reward ({$total_poin_cocok_reward})";
+            } else {
+                $keputusan = "<strong style='color:orange;'>SEIMBANG</strong> — Poin Reward ({$total_poin_cocok_reward}) = Poin Punishment ({$total_poin_cocok_punishment})";
+            }
+
+            // Tampilkan akumulasi total poin siswa (informasi tambahan)
+            $reward_total = $data_siswa_baru['total_poin_reward'];
+            $punishment_total = $data_siswa_baru['total_poin_punishment'];
+            $akumulasi_info = "Akumulasi Poin Siswa: Reward {$reward_total} | Punishment {$punishment_total}";
+
+            $notif_pesan = "<div class='alert success'><strong>Sistem Berhasil Memproses!</strong><br>
+                            Hasil Analisis: <strong>$label_hasil</strong><br>
+                            Tindakan: {$aturan['nama_perilaku']} ($poin_didapat Poin)
+                            {$detail_reward}
+                            {$detail_punishment}
+                            <hr>
+                            <strong>Keputusan Akhir: {$keputusan}</strong><br>
+                            <small style='color:#666;'>{$akumulasi_info}</small></div>";
+
+            // Threshold check: Jika poin punishment mencapai atau melebihi 50 poin
+            if ($punishment_total >= 50) {
+                $notif_pesan .= "<div class='alert danger'><strong>⚠️ NOTIFIKASI TINDAK LANJUT:</strong> Poin pelanggaran siswa <strong>{$data_siswa_baru['nama_siswa']}</strong> telah mencapai {$punishment_total} poin. Segera hubungi Guru BK!</div>";
+            }
+        } else {
+            $notif_pesan = "<div class='alert danger'>Gagal memproses laporan.</div>";
+        }
     }
 }
 ?>
