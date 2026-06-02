@@ -120,16 +120,19 @@ if (isset($_POST['submit_laporan'])) {
             $detail_punishment .= "<br><em>Total Punishment: {$total_poin_cocok_punishment} poin</em></div>";
         }
         
-        // Tentukan keputusan akhir dari perbandingan
+        // Tentukan keputusan akhir sesuai hasil analisis laporan ini
+        if ($label_hasil == 'Reward') {
+            $keputusan = "<strong style='color:green;'>REWARD</strong> — Total poin Reward pada laporan ini ({$total_poin_cocok_reward}) > Total poin Punishment ({$total_poin_cocok_punishment})";
+        } elseif ($label_hasil == 'Punishment') {
+            $keputusan = "<strong style='color:red;'>PUNISHMENT</strong> — Total poin Punishment pada laporan ini ({$total_poin_cocok_punishment}) > Total poin Reward ({$total_poin_cocok_reward})";
+        } else {
+            $keputusan = "<strong style='color:orange;'>SEIMBANG</strong> — Poin Reward ({$total_poin_cocok_reward}) = Poin Punishment ({$total_poin_cocok_punishment})";
+        }
+        
+        // Tampilkan akumulasi total poin siswa (informasi tambahan)
         $reward_total = $data_siswa_baru['total_poin_reward'];
         $punishment_total = $data_siswa_baru['total_poin_punishment'];
-        if ($reward_total > $punishment_total) {
-            $keputusan = "<strong style='color:green;'>REWARD</strong> — Poin Reward ({$reward_total}) > Poin Punishment ({$punishment_total})";
-        } elseif ($punishment_total > $reward_total) {
-            $keputusan = "<strong style='color:red;'>PUNISHMENT</strong> — Poin Punishment ({$punishment_total}) > Poin Reward ({$reward_total})";
-        } else {
-            $keputusan = "<strong style='color:orange;'>SEIMBANG</strong> — Poin Reward ({$reward_total}) = Poin Punishment ({$punishment_total})";
-        }
+        $akumulasi_info = "Akumulasi Poin Siswa: Reward {$reward_total} | Punishment {$punishment_total}";
         
         $notif_pesan = "<div class='alert success'><strong>Sistem Berhasil Memproses!</strong><br>
                         Hasil Analisis: <strong>$label_hasil</strong><br>
@@ -137,7 +140,8 @@ if (isset($_POST['submit_laporan'])) {
                         {$detail_reward}
                         {$detail_punishment}
                         <hr>
-                        <strong>Keputusan Akhir: {$keputusan}</strong></div>";
+                        <strong>Keputusan Akhir: {$keputusan}</strong><br>
+                        <small style='color:#666;'>{$akumulasi_info}</small></div>";
                         
         // Threshold check: Jika poin punishment mencapai atau melebihi 50 poin
         if ($punishment_total >= 50) {
