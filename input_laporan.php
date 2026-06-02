@@ -46,8 +46,6 @@ if (isset($_POST['submit_laporan'])) {
         }
     }
 
-    // Cek apakah ada aturan yang cocok
-    $ada_aturan_tercocok = ($total_poin_cocok_reward > 0 || $total_poin_cocok_punishment > 0);
     $tolak_laporan = false;
 
     // Tentukan label: bandingkan TOTAL point dari masing-masing sisi
@@ -76,12 +74,12 @@ if (isset($_POST['submit_laporan'])) {
                 }
             }
         }
-        // Jika tetap tidak ada aturan yang cocok dan tidak ada aturan awal yang cocok → tolak
-        if (!$aturan && !$ada_aturan_tercocok) {
+        // Jika tetap tidak ada aturan yang cocok dan NLP tidak mengenali teks → tolak
+        if (!$aturan && !teks_dikenali_oleh_training($conn, $teks_laporan)) {
             $notif_pesan = "<div class='alert danger'><strong>Gagal Memproses!</strong> Teks laporan tidak dikenali. Tidak ada aturan maupun data training yang cocok dengan deskripsi perilaku yang dimasukkan. Silakan perbaiki deskripsi laporan.</div>";
             $tolak_laporan = true;
         }
-        if (!$aturan) {
+        if (!$aturan && !$tolak_laporan) {
             $query_first = mysqli_query($conn, "SELECT * FROM master_poin WHERE jenis = '$label_hasil' LIMIT 1");
             $aturan = mysqli_fetch_assoc($query_first);
         }

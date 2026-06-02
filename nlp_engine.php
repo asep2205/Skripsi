@@ -196,4 +196,24 @@ function klasifikasi_naive_bayes($conn, $teks_input, $poin_reward_siswa = 0, $po
     // (sudah ditambah pertimbangan historis poin siswa yang ringan)
     return ($score_positif >= $score_negatif) ? 'Reward' : 'Punishment';
 }
+
+// Cek apakah teks dikenal oleh dataset training (minimal ada 1 token yang muncul di training)
+function teks_dikenali_oleh_training($conn, $teks_input) {
+    $tokens = preprocess_text($teks_input);
+    if (empty($tokens)) return false;
+
+    $query = mysqli_query($conn, "SELECT teks_sampel FROM dataset_training");
+    $all_tokens_training = [];
+    while ($row = mysqli_fetch_assoc($query)) {
+        $all_tokens_training = array_merge($all_tokens_training, preprocess_text($row['teks_sampel']));
+    }
+    $known_vocab = array_unique($all_tokens_training);
+
+    foreach ($tokens as $token) {
+        if (in_array($token, $known_vocab)) {
+            return true;
+        }
+    }
+    return false;
+}
 ?>
