@@ -158,13 +158,14 @@ if (isset($_POST['submit_laporan'])) {
 <head>
     <meta charset="UTF-8">
     <title>Input Laporan Perilaku - Sistem Reward & Punishment</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js@10.2.0/public/assets/styles/choices.min.css" />
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; }
         .container { max-width: 700px; background: #fff; padding: 25px; margin: auto; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         h2 { color: #333; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
         .form-group { margin-bottom: 15px; }
         label { display: block; font-weight: bold; margin-bottom: 5px; color: #555; }
-        select, textarea, button { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        textarea, button { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
         textarea { height: 120px; resize: vertical; }
         button { background-color: #4CAF50; color: white; font-size: 16px; border: none; cursor: pointer; font-weight: bold; margin-top: 10px; }
         button:hover { background-color: #45a049; }
@@ -207,5 +208,15 @@ if (isset($_POST['submit_laporan'])) {
     <a href="dashboard.php" class="nav-link">← Lihat Rekap & Dashboard Siswa</a>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/choices.js@10.2.0/public/assets/scripts/choices.min.js"></script>
+<script>
+    new Choices('#id_siswa', {
+        searchEnabled: true,
+        searchPlaceholderValue: 'Ketik nama siswa...',
+        noResultsText: 'Siswa tidak ditemukan',
+        noChoicesText: 'Tidak ada data siswa',
+        itemSelectText: ''
+    });
+</script>
 </body>
 </html>
