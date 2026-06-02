@@ -25,8 +25,13 @@ include 'config.php';
 <body>
 
 <div class="container">
-    <h2>Dashboard Monitoring Poin Perilaku Siswa</h2>
-    <a href="input_laporan.php" class="btn">+ Input Laporan Baru</a>
+    <div class="header-row" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+        <h2>Dashboard Monitoring Poin Perilaku Siswa</h2>
+        <div>
+            <a href="laporan_kelas.php" class="btn">Laporan Per Kelas</a>
+            <a href="input_laporan.php" class="btn">+ Input Laporan Baru</a>
+        </div>
+    </div>
     
     <table>
         <thead>

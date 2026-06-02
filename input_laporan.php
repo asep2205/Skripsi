@@ -203,6 +203,7 @@ if (isset($_POST['submit_laporan'])) {
         <button type="submit" name="submit_laporan">Proses & Simpan Laporan</button>
     </form>
     
+    <a href="laporan_kelas.php" class="nav-link">Laporan Per Kelas →</a><br>
     <a href="dashboard.php" class="nav-link">← Lihat Rekap & Dashboard Siswa</a>
 </div>
 
