@@ -1,6 +1,18 @@
 <?php
 include 'config.php';
-include 'nlp_engine.php';
+
+// ============================================================
+// ENGINE SELECTION
+// Set ke true untuk menggunakan Python NLP engine (backup plan)
+// Set ke false untuk menggunakan PHP NLP engine (default)
+// ============================================================
+$USE_PYTHON_ENGINE = false;
+
+if ($USE_PYTHON_ENGINE) {
+    include 'nlp_engine_py.php';
+} else {
+    include 'nlp_engine.php';
+}
 
 // Simulasi session login user (Guru) jika belum ada sistem login lengkap
 $id_user_login = 2; // Default ke id_user 2 (Guru1)
@@ -20,72 +32,105 @@ if (isset($_POST['submit_laporan'])) {
     // =====================================================================
     // KOMBINASI REWARD + PUNISHMENT: Cocokkan SEMUA aturan dari master_poin
     // =====================================================================
-    $query_all = mysqli_query($conn, "SELECT * FROM master_poin");
-    $total_poin_cocok_reward = 0;
-    $total_poin_cocok_punishment = 0;
-    $daftar_reward_tercocok = [];
-    $daftar_punishment_tercocok = [];
-    $reward_terbaik = null;
-    $punishment_terbaik = null;
 
-    while ($row = mysqli_fetch_assoc($query_all)) {
-        if (strpos(strtolower($teks_laporan), strtolower($row['nama_perilaku'])) !== false) {
-            if ($row['jenis'] == 'Reward') {
-                $total_poin_cocok_reward += $row['poin'];
-                $daftar_reward_tercocok[] = $row;
-                if (!$reward_terbaik || $row['poin'] > $reward_terbaik['poin']) {
-                    $reward_terbaik = $row;
-                }
-            } else {
-                $total_poin_cocok_punishment += $row['poin'];
-                $daftar_punishment_tercocok[] = $row;
-                if (!$punishment_terbaik || $row['poin'] > $punishment_terbaik['poin']) {
-                    $punishment_terbaik = $row;
-                }
-            }
+    if ($USE_PYTHON_ENGINE) {
+        // ---- PYTHON ENGINE ----
+        $py_result = klasifikasi_python($conn, $teks_laporan, $poin_reward_lama, $poin_punishment_lama);
+
+        $label_hasil = $py_result['label'];
+        $tolak_laporan = $py_result['tolak'];
+        $total_poin_cocok_reward = $py_result['total_poin_reward'];
+        $total_poin_cocok_punishment = $py_result['total_poin_punishment'];
+
+        $daftar_reward_tercocok = [];
+        foreach ($py_result['daftar_reward'] as $r) {
+            $daftar_reward_tercocok[] = [
+                'id_aturan' => $r[0], 'nama_perilaku' => $r[1], 'poin' => $r[2], 'jenis' => 'Reward'
+            ];
         }
-    }
+        $daftar_punishment_tercocok = [];
+        foreach ($py_result['daftar_punishment'] as $p) {
+            $daftar_punishment_tercocok[] = [
+                'id_aturan' => $p[0], 'nama_perilaku' => $p[1], 'poin' => $p[2], 'jenis' => 'Punishment'
+            ];
+        }
 
-    $tolak_laporan = false;
-
-    // Tentukan label: bandingkan TOTAL point dari masing-masing sisi
-    if ($total_poin_cocok_punishment > $total_poin_cocok_reward) {
-        $label_hasil = 'Punishment';
-        $aturan = $punishment_terbaik;
-    } elseif ($total_poin_cocok_reward > $total_poin_cocok_punishment) {
-        $label_hasil = 'Reward';
-        $aturan = $reward_terbaik;
-    } else {
-        // Jika seri atau tidak ada yang cocok → fallback ke NLP
-        $label_hasil = klasifikasi_naive_bayes($conn, $teks_laporan, $poin_reward_lama, $poin_punishment_lama);
         $aturan = null;
-        // Cari aturan dengan poin tertinggi sesuai label hasil NLP
-        if ($label_hasil == 'Reward' && !empty($daftar_reward_tercocok)) {
-            $aturan = $reward_terbaik;
-        } elseif ($label_hasil == 'Punishment' && !empty($daftar_punishment_tercocok)) {
-            $aturan = $punishment_terbaik;
+        if ($py_result['aturan']) {
+            $aturan = [
+                'id_aturan' => $py_result['aturan']['id'],
+                'nama_perilaku' => $py_result['aturan']['nama'],
+                'poin' => $py_result['aturan']['poin'],
+            ];
         }
-        if (!$aturan) {
-            $query_label = mysqli_query($conn, "SELECT * FROM master_poin WHERE jenis = '$label_hasil' ORDER BY poin DESC");
-            while ($row = mysqli_fetch_assoc($query_label)) {
-                if (strpos(strtolower($teks_laporan), strtolower($row['nama_perilaku'])) !== false) {
-                    $aturan = $row;
-                    break;
+
+        if ($tolak_laporan) {
+            $notif_pesan = "<div class='alert danger'><strong>Gagal Memproses!</strong> {$py_result['pesan']} Silakan perbaiki deskripsi laporan.</div>";
+        }
+    } else {
+        // ---- PHP ENGINE (asli) ----
+        $query_all = mysqli_query($conn, "SELECT * FROM master_poin");
+        $total_poin_cocok_reward = 0;
+        $total_poin_cocok_punishment = 0;
+        $daftar_reward_tercocok = [];
+        $daftar_punishment_tercocok = [];
+        $reward_terbaik = null;
+        $punishment_terbaik = null;
+
+        while ($row = mysqli_fetch_assoc($query_all)) {
+            if (strpos(strtolower($teks_laporan), strtolower($row['nama_perilaku'])) !== false) {
+                if ($row['jenis'] == 'Reward') {
+                    $total_poin_cocok_reward += $row['poin'];
+                    $daftar_reward_tercocok[] = $row;
+                    if (!$reward_terbaik || $row['poin'] > $reward_terbaik['poin']) {
+                        $reward_terbaik = $row;
+                    }
+                } else {
+                    $total_poin_cocok_punishment += $row['poin'];
+                    $daftar_punishment_tercocok[] = $row;
+                    if (!$punishment_terbaik || $row['poin'] > $punishment_terbaik['poin']) {
+                        $punishment_terbaik = $row;
+                    }
                 }
             }
         }
-        // Jika tidak ada aturan yang cocok langsung, cari via training sample terdekat
-        if (!$aturan) {
-            $aturan = cari_aturan_via_training($conn, $teks_laporan, $label_hasil);
-        }
-        // Jika tetap tidak ada aturan yang cocok dan NLP tidak mengenali teks → tolak
-        if (!$aturan && !teks_dikenali_oleh_training($conn, $teks_laporan)) {
-            $notif_pesan = "<div class='alert danger'><strong>Gagal Memproses!</strong> Teks laporan tidak dikenali. Tidak ada aturan maupun data training yang cocok dengan deskripsi perilaku yang dimasukkan. Silakan perbaiki deskripsi laporan.</div>";
-            $tolak_laporan = true;
-        }
-        if (!$aturan && !$tolak_laporan) {
-            $query_first = mysqli_query($conn, "SELECT * FROM master_poin WHERE jenis = '$label_hasil' ORDER BY poin DESC LIMIT 1");
-            $aturan = mysqli_fetch_assoc($query_first);
+
+        $tolak_laporan = false;
+
+        if ($total_poin_cocok_punishment > $total_poin_cocok_reward) {
+            $label_hasil = 'Punishment';
+            $aturan = $punishment_terbaik;
+        } elseif ($total_poin_cocok_reward > $total_poin_cocok_punishment) {
+            $label_hasil = 'Reward';
+            $aturan = $reward_terbaik;
+        } else {
+            $label_hasil = klasifikasi_naive_bayes($conn, $teks_laporan, $poin_reward_lama, $poin_punishment_lama);
+            $aturan = null;
+            if ($label_hasil == 'Reward' && !empty($daftar_reward_tercocok)) {
+                $aturan = $reward_terbaik;
+            } elseif ($label_hasil == 'Punishment' && !empty($daftar_punishment_tercocok)) {
+                $aturan = $punishment_terbaik;
+            }
+            if (!$aturan) {
+                $query_label = mysqli_query($conn, "SELECT * FROM master_poin WHERE jenis = '$label_hasil' ORDER BY poin DESC");
+                while ($row = mysqli_fetch_assoc($query_label)) {
+                    if (strpos(strtolower($teks_laporan), strtolower($row['nama_perilaku'])) !== false) {
+                        $aturan = $row;
+                        break;
+                    }
+                }
+            }
+            if (!$aturan) {
+                $aturan = cari_aturan_via_training($conn, $teks_laporan, $label_hasil);
+            }
+            if (!$aturan && !teks_dikenali_oleh_training($conn, $teks_laporan)) {
+                $notif_pesan = "<div class='alert danger'><strong>Gagal Memproses!</strong> Teks laporan tidak dikenali. Tidak ada aturan maupun data training yang cocok dengan deskripsi perilaku yang dimasukkan. Silakan perbaiki deskripsi laporan.</div>";
+                $tolak_laporan = true;
+            }
+            if (!$aturan && !$tolak_laporan) {
+                $query_first = mysqli_query($conn, "SELECT * FROM master_poin WHERE jenis = '$label_hasil' ORDER BY poin DESC LIMIT 1");
+                $aturan = mysqli_fetch_assoc($query_first);
+            }
         }
     }
 

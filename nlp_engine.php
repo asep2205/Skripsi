@@ -116,6 +116,8 @@ function klasifikasi_naive_bayes($conn, $teks_input, $poin_reward_siswa = 0, $po
     }
     
     if ($total_dokumen == 0) return 'Reward';
+    if ($count_positif == 0) return 'Punishment';
+    if ($count_negatif == 0) return 'Reward';
     
     $prior_positif = $count_positif / $total_dokumen;
     $prior_negatif = $count_negatif / $total_dokumen;
