@@ -3,25 +3,46 @@ include 'config.php';
 
 // ============================================================
 // ENGINE SELECTION
-// Set ke true untuk menggunakan Python NLP engine (backup plan)
-// Set ke false untuk menggunakan PHP NLP engine (default)
 // ============================================================
-$USE_PYTHON_ENGINE = false;
+define('PYTHON_BIN', 'python3');
+define('PYTHON_ENGINE_SCRIPT', __DIR__ . '/nlp_engine_web.py');
 
-if ($USE_PYTHON_ENGINE) {
-    include 'nlp_engine_py.php';
-} else {
-    include 'nlp_engine.php';
-}
-
-// Simulasi session login user (Guru) jika belum ada sistem login lengkap
-$id_user_login = 2; // Default ke id_user 2 (Guru1)
+$id_user_login = 2;
 
 $notif_pesan = "";
 
 if (isset($_POST['submit_laporan'])) {
     $id_siswa = $_POST['id_siswa'];
-    $teks_laporan = $_POST['teks_laporan'];
+    $teks_laporan = trim($_POST['teks_laporan']);
+
+    // --- Validasi input ---
+    $errors = [];
+    if (strlen($teks_laporan) < 15) {
+        $errors[] = "Deskripsi terlalu pendek (minimal 15 karakter).";
+    }
+    if (strlen($teks_laporan) > 500) {
+        $errors[] = "Deskripsi terlalu panjang (maksimal 500 karakter).";
+    }
+    $word_count = str_word_count($teks_laporan);
+    if ($word_count < 3) {
+        $errors[] = "Deskripsi harus mengandung minimal 3 kata.";
+    }
+    $non_alpha_ratio = 0;
+    if (strlen($teks_laporan) > 0) {
+        $alpha = preg_match_all('/[a-zA-Z]/', $teks_laporan);
+        $non_alpha_ratio = 1 - ($alpha / strlen($teks_laporan));
+    }
+    if ($non_alpha_ratio > 0.5) {
+        $errors[] = "Deskripsi terlalu banyak mengandung angka/simbol, gunakan kalimat yang wajar.";
+    }
+    if (preg_match('/(.)\1{4,}/', $teks_laporan)) {
+        $errors[] = "Deskripsi mengandung karakter berulang tidak wajar.";
+    }
+
+    if (!empty($errors)) {
+        $tolak_laporan = true;
+        $notif_pesan = "<div class='alert danger'><strong>Input Tidak Valid!</strong><br>" . implode("<br>", $errors) . "</div>";
+    } else {
     
     // --- Ambil riwayat poin siswa sebelum diproses ---
     $query_siswa = mysqli_query($conn, "SELECT * FROM siswa WHERE id_siswa = '$id_siswa'");
@@ -30,15 +51,37 @@ if (isset($_POST['submit_laporan'])) {
     $poin_punishment_lama = $data_siswa['total_poin_punishment'];
     
     // =====================================================================
-    // KOMBINASI REWARD + PUNISHMENT: Cocokkan SEMUA aturan dari master_poin
+    // PANGGIL PYTHON ENGINE
     // =====================================================================
 
-    if ($USE_PYTHON_ENGINE) {
-        // ---- PYTHON ENGINE ----
-        $py_result = klasifikasi_python($conn, $teks_laporan, $poin_reward_lama, $poin_punishment_lama);
+    $cmd = PYTHON_BIN . ' ' . escapeshellarg(PYTHON_ENGINE_SCRIPT) . ' ' . escapeshellarg($teks_laporan);
+    $output = shell_exec($cmd);
+    $py_result = json_decode($output, true);
 
+    if (!$py_result) {
+        $tolak_laporan = true;
+        $notif_pesan = "<div class='alert danger'><strong>Gagal Memproses!</strong> Python engine tidak merespon. Silakan coba lagi.</div>";
+        $label_hasil = '';
+        $nama_perilaku = '';
+        $poin_didapat = 0;
+    } elseif (isset($py_result['dikenali']) && $py_result['dikenali'] === false) {
+        $tolak_laporan = true;
+        $notif_pesan = "<div class='alert danger'><strong>Teks Tidak Dikenali!</strong> Deskripsi yang Anda masukkan tidak mengandung kata yang dikenali oleh sistem. Gunakan kalimat yang mendeskripsikan perilaku siswa dengan jelas (contoh: siswa membantu membersihkan kelas, siswa terlambat masuk sekolah, dll).</div>";
+        $label_hasil = '';
+        $nama_perilaku = '';
+        $poin_didapat = 0;
+    } elseif (
+        (isset($py_result['garbage_flags']['consecutive_no_vowel']) && $py_result['garbage_flags']['consecutive_no_vowel'] >= 2) ||
+        (isset($py_result['garbage_flags']['long_consonant_run']) && $py_result['garbage_flags']['long_consonant_run'] >= 1)
+    ) {
+        $tolak_laporan = true;
+        $notif_pesan = "<div class='alert danger'><strong>Teks Tidak Valid!</strong> Deskripsi mengandung kata-kata yang tidak wajar (bukan bahasa Indonesia). Harap masukkan deskripsi perilaku siswa yang benar.</div>";
+        $label_hasil = '';
+        $nama_perilaku = '';
+        $poin_didapat = 0;
+    } else {
+        $tolak_laporan = false;
         $label_hasil = $py_result['label'];
-        $tolak_laporan = $py_result['tolak'];
         $total_poin_cocok_reward = $py_result['total_poin_reward'];
         $total_poin_cocok_punishment = $py_result['total_poin_punishment'];
 
@@ -56,93 +99,26 @@ if (isset($_POST['submit_laporan'])) {
         }
 
         $aturan = null;
+        $nama_perilaku = '';
         if ($py_result['aturan']) {
             $aturan = [
                 'id_aturan' => $py_result['aturan']['id'],
                 'nama_perilaku' => $py_result['aturan']['nama'],
                 'poin' => $py_result['aturan']['poin'],
             ];
+            $nama_perilaku = $aturan['nama_perilaku'];
         }
 
-        if ($tolak_laporan) {
-            $notif_pesan = "<div class='alert danger'><strong>Gagal Memproses!</strong> {$py_result['pesan']} Silakan perbaiki deskripsi laporan.</div>";
-        }
-    } else {
-        // ---- PHP ENGINE (asli) ----
-        $query_all = mysqli_query($conn, "SELECT * FROM master_poin");
-        $total_poin_cocok_reward = 0;
-        $total_poin_cocok_punishment = 0;
-        $daftar_reward_tercocok = [];
-        $daftar_punishment_tercocok = [];
-        $reward_terbaik = null;
-        $punishment_terbaik = null;
-
-        while ($row = mysqli_fetch_assoc($query_all)) {
-            if (strpos(strtolower($teks_laporan), strtolower($row['nama_perilaku'])) !== false) {
-                if ($row['jenis'] == 'Reward') {
-                    $total_poin_cocok_reward += $row['poin'];
-                    $daftar_reward_tercocok[] = $row;
-                    if (!$reward_terbaik || $row['poin'] > $reward_terbaik['poin']) {
-                        $reward_terbaik = $row;
-                    }
-                } else {
-                    $total_poin_cocok_punishment += $row['poin'];
-                    $daftar_punishment_tercocok[] = $row;
-                    if (!$punishment_terbaik || $row['poin'] > $punishment_terbaik['poin']) {
-                        $punishment_terbaik = $row;
-                    }
-                }
-            }
-        }
-
-        $tolak_laporan = false;
-
-        if ($total_poin_cocok_punishment > $total_poin_cocok_reward) {
-            $label_hasil = 'Punishment';
-            $aturan = $punishment_terbaik;
-        } elseif ($total_poin_cocok_reward > $total_poin_cocok_punishment) {
-            $label_hasil = 'Reward';
-            $aturan = $reward_terbaik;
-        } else {
-            $label_hasil = klasifikasi_naive_bayes($conn, $teks_laporan, $poin_reward_lama, $poin_punishment_lama);
-            $aturan = null;
-            if ($label_hasil == 'Reward' && !empty($daftar_reward_tercocok)) {
-                $aturan = $reward_terbaik;
-            } elseif ($label_hasil == 'Punishment' && !empty($daftar_punishment_tercocok)) {
-                $aturan = $punishment_terbaik;
-            }
-            if (!$aturan) {
-                $query_label = mysqli_query($conn, "SELECT * FROM master_poin WHERE jenis = '$label_hasil' ORDER BY poin DESC");
-                while ($row = mysqli_fetch_assoc($query_label)) {
-                    if (strpos(strtolower($teks_laporan), strtolower($row['nama_perilaku'])) !== false) {
-                        $aturan = $row;
-                        break;
-                    }
-                }
-            }
-            if (!$aturan) {
-                $aturan = cari_aturan_via_training($conn, $teks_laporan, $label_hasil);
-            }
-            if (!$aturan && !teks_dikenali_oleh_training($conn, $teks_laporan)) {
-                $notif_pesan = "<div class='alert danger'><strong>Gagal Memproses!</strong> Teks laporan tidak dikenali. Tidak ada aturan maupun data training yang cocok dengan deskripsi perilaku yang dimasukkan. Silakan perbaiki deskripsi laporan.</div>";
-                $tolak_laporan = true;
-            }
-            if (!$aturan && !$tolak_laporan) {
-                $query_first = mysqli_query($conn, "SELECT * FROM master_poin WHERE jenis = '$label_hasil' ORDER BY poin DESC LIMIT 1");
-                $aturan = mysqli_fetch_assoc($query_first);
-            }
-        }
+        $id_aturan = $aturan ? $aturan['id_aturan'] : null;
+        $poin_didapat = $aturan ? $aturan['poin'] : 0;
     }
-
-    $id_aturan = $aturan ? $aturan['id_aturan'] : null;
-    $poin_didapat = $aturan ? $aturan['poin'] : 0;
 
     if ($tolak_laporan) {
         // Laporan ditolak, tidak disimpan
     } else {
         // --- Simpan Transaksi Laporan ---
-        $insert = mysqli_query($conn, "INSERT INTO laporan_perilaku (id_siswa, id_user, teks_laporan, label_prediksi, id_aturan_tercocok, poin_didapat) 
-                   VALUES ('$id_siswa', '$id_user_login', '$teks_laporan', '$label_hasil', '$id_aturan', '$poin_didapat')");
+        $insert = mysqli_query($conn, "INSERT INTO laporan_perilaku (id_siswa, id_user, teks_laporan, label_prediksi, nama_perilaku, poin_didapat) 
+                   VALUES ('$id_siswa', '$id_user_login', '$teks_laporan', '$label_hasil', '$nama_perilaku', '$poin_didapat')");
 
         if ($insert) {
             // --- Update Akumulasi Profil Poin Siswa ---
@@ -156,59 +132,16 @@ if (isset($_POST['submit_laporan'])) {
             $query_siswa_baru = mysqli_query($conn, "SELECT * FROM siswa WHERE id_siswa = '$id_siswa'");
             $data_siswa_baru = mysqli_fetch_assoc($query_siswa_baru);
 
-            // --- Bangun notifikasi detail ---
-            $detail_reward = '';
-            if (count($daftar_reward_tercocok) > 0) {
-                $detail_reward = '<div style="margin-top:8px;"><strong>Reward:</strong> ';
-                $reward_items = [];
-                foreach ($daftar_reward_tercocok as $r) {
-                    $reward_items[] = "{$r['nama_perilaku']} (+{$r['poin']} poin)";
-                }
-                $detail_reward .= implode('<br>', $reward_items);
-                $detail_reward .= "<br><em>Total Reward: {$total_poin_cocok_reward} poin</em></div>";
-            }
-
-            $detail_punishment = '';
-            if (count($daftar_punishment_tercocok) > 0) {
-                $detail_punishment = '<div style="margin-top:5px;"><strong>Punishment:</strong> ';
-                $puni_items = [];
-                foreach ($daftar_punishment_tercocok as $p) {
-                    $puni_items[] = "{$p['nama_perilaku']} (-{$p['poin']} poin)";
-                }
-                $detail_punishment .= implode('<br>', $puni_items);
-                $detail_punishment .= "<br><em>Total Punishment: {$total_poin_cocok_punishment} poin</em></div>";
-            }
-
-            // Tentukan keputusan akhir sesuai hasil analisis laporan ini
-            if ($label_hasil == 'Reward') {
-                $keputusan = "<strong style='color:green;'>REWARD</strong> — Total poin Reward pada laporan ini ({$total_poin_cocok_reward}) > Total poin Punishment ({$total_poin_cocok_punishment})";
-            } elseif ($label_hasil == 'Punishment') {
-                $keputusan = "<strong style='color:red;'>PUNISHMENT</strong> — Total poin Punishment pada laporan ini ({$total_poin_cocok_punishment}) > Total poin Reward ({$total_poin_cocok_reward})";
-            } else {
-                $keputusan = "<strong style='color:orange;'>SEIMBANG</strong> — Poin Reward ({$total_poin_cocok_reward}) = Poin Punishment ({$total_poin_cocok_punishment})";
-            }
-
-            // Tampilkan akumulasi total poin siswa (informasi tambahan)
-            $reward_total = $data_siswa_baru['total_poin_reward'];
-            $punishment_total = $data_siswa_baru['total_poin_punishment'];
-            $akumulasi_info = "Akumulasi Poin Siswa: Reward {$reward_total} | Punishment {$punishment_total}";
-
+            $tindakan_label = $aturan ? $aturan['nama_perilaku'] : 'Naive Bayes';
             $notif_pesan = "<div class='alert success'><strong>Sistem Berhasil Memproses!</strong><br>
                             Hasil Analisis: <strong>$label_hasil</strong><br>
-                            Tindakan: {$aturan['nama_perilaku']} ($poin_didapat Poin)
-                            {$detail_reward}
-                            {$detail_punishment}
+                            Tindakan: {$tindakan_label} ($poin_didapat Poin)
                             <hr>
-                            <strong>Keputusan Akhir: {$keputusan}</strong><br>
-                            <small style='color:#666;'>{$akumulasi_info}</small></div>";
-
-            // Threshold check: Jika poin punishment mencapai atau melebihi 50 poin
-            if ($punishment_total >= 50) {
-                $notif_pesan .= "<div class='alert danger'><strong>⚠️ NOTIFIKASI TINDAK LANJUT:</strong> Poin pelanggaran siswa <strong>{$data_siswa_baru['nama_siswa']}</strong> telah mencapai {$punishment_total} poin. Segera hubungi Guru BK!</div>";
-            }
+                            <strong>Keputusan Akhir: $label_hasil</strong></div>";
         } else {
             $notif_pesan = "<div class='alert danger'>Gagal memproses laporan.</div>";
         }
+    }
     }
 }
 ?>
@@ -276,6 +209,16 @@ if (isset($_POST['submit_laporan'])) {
         noResultsText: 'Siswa tidak ditemukan',
         noChoicesText: 'Tidak ada data siswa',
         itemSelectText: ''
+    });
+
+    // Cegah double-click — jangan disable button, pakai flag saja
+    document.querySelector('form').addEventListener('submit', function() {
+        var btn = this.querySelector('button[type="submit"]');
+        if (btn.dataset.submitted === '1') {
+            return false; // ignore double-click
+        }
+        btn.dataset.submitted = '1';
+        btn.textContent = 'Memproses...';
     });
 </script>
 </body>

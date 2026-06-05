@@ -37,12 +37,13 @@ include 'config.php';
 
     <?php
     $qkelas = mysqli_query($conn, "
-        SELECT kelas,
-               SUM(total_poin_reward) as total_reward,
-               SUM(total_poin_punishment) as total_punishment
-        FROM siswa
-        GROUP BY kelas
-        ORDER BY kelas
+        SELECT s.kelas,
+               COALESCE(SUM(CASE WHEN lp.label_prediksi = 'Reward' THEN lp.poin_didapat ELSE 0 END), 0) as total_reward,
+               COALESCE(SUM(CASE WHEN lp.label_prediksi = 'Punishment' THEN lp.poin_didapat ELSE 0 END), 0) as total_punishment
+        FROM siswa s
+        LEFT JOIN laporan_perilaku lp ON s.id_siswa = lp.id_siswa
+        GROUP BY s.kelas
+        ORDER BY s.kelas
     ");
     $label_kelas = [];
     $data_reward = [];
@@ -115,10 +116,18 @@ include 'config.php';
         </thead>
         <tbody>
             <?php
-            $query = mysqli_query($conn, "SELECT * FROM siswa");
+            $query = mysqli_query($conn, "
+                SELECT s.*,
+                       COALESCE(SUM(CASE WHEN lp.label_prediksi = 'Reward' THEN lp.poin_didapat ELSE 0 END), 0) as total_reward,
+                       COALESCE(SUM(CASE WHEN lp.label_prediksi = 'Punishment' THEN lp.poin_didapat ELSE 0 END), 0) as total_punishment
+                FROM siswa s
+                LEFT JOIN laporan_perilaku lp ON s.id_siswa = lp.id_siswa
+                GROUP BY s.id_siswa
+                ORDER BY s.nama_siswa
+            ");
             while ($row = mysqli_fetch_assoc($query)) {
-                $reward = $row['total_poin_reward'];
-                $punishment = $row['total_poin_punishment'];
+                $reward = $row['total_reward'];
+                $punishment = $row['total_punishment'];
                 
                 // Keputusan berdasarkan perbandingan poin reward vs punishment
                 if ($reward > $punishment) {

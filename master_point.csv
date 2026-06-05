@@ -1,0 +1,302 @@
+1,Punishment,"terlambat, kesiangan",10
+2,Punishment,"telat, dihukum",10
+3,Punishment,"terlambat, upacara",10
+4,Punishment,"terlambat, razia",10
+5,Punishment,"lompat, pagar, terlambat",10
+6,Punishment,"telat, tugas",10
+7,Punishment,"nongkrong, warung, terlambat",10
+8,Punishment,"telat, tanpa keterangan",10
+9,Punishment,"terlambat, ujian",10
+10,Punishment,"dihukum, lapangan, telat",10
+11,Reward,"sukarela, bersih, kaca",10
+12,Punishment,"buang sampah, sembarangan",10
+13,Reward,"menyapu, mengepel, bersih",10
+14,Punishment,"coret, meja, spidol",10
+15,Reward,"merapikan, peralatan, piket",10
+16,Punishment,"mengotori, dinding, toilet",10
+17,Reward,"buang sampah, organik, benar",10
+18,Punishment,"meninggalkan, kotor, sampah",10
+19,Reward,"membantu, menyiram, tanaman",10
+20,Punishment,"menyumbat, wastafel, sampah",10
+21,Punishment,"menendang, pintu, rusak, patah",10
+22,Punishment,"coret, dinding, piloks",10
+23,Punishment,"merusak, saklar, lampu",10
+24,Punishment,"mematahkan, penggaris, inventaris",10
+25,Punishment,"melempari, kaca, retak",10
+26,Punishment,"merobek, buku, perpustakaan",10
+27,Punishment,"merusak, jaring, net",10
+28,Punishment,"mencopot, tanaman, merusak, pot",10
+29,Punishment,"menggores, mobil, paku",10
+30,Punishment,"merusak, kran, patah",10
+31,Punishment,narkotika,100
+32,Punishment,Merampas atau mencuri milik orang lain baik di sekolah atau di luar sekolah,100
+33,Punishment,berkelahi,100
+34,Punishment,hamil,100
+35,Punishment,ditato,100
+36,Punishment,Memalsukan surat atau tanda tangan pejabat sekolah,50
+37,Punishment,menghina,50
+38,Punishment,senjata tajam,50
+39,Punishment,pornografi,50
+40,Punishment,Merusak dan menghilangkan barang milik sekolah dan atau milik orang lain,50
+41,Punishment,Merusak lingkungan sekolah dan atau lingkungan umum,50
+42,Punishment,Pelecehan seksual,50
+43,Punishment,Menyalahgunakan keuangan sekolah,30
+44,Punishment,Merokok di lingkungan sekolah dan atau di luar sekolah dengan memakai seragam atau atribut sekolah,30
+45,Punishment,Kabur atau meninggalkan kelas (sekolah) tanpa izin guru pengajar,30
+46,Punishment,Memalsukan surat atau tanda tangan orang tua / wali,30
+47,Punishment,Tidak masuk sekolah tanpa keterangan 3 hari dalam sepekan ,30
+48,Punishment,Tidak masuk sekolah tanpa keterangan lebih dari 3 hari dalam sebulan,30
+49,Punishment,coretan,30
+50,Punishment,aksesoris,15
+51,Punishment,"seragam tidak sesuai ketentuan",15
+52,Punishment,Membawa rokok ke sekolah,15
+53,Punishment,Memakai pakaian yang tidak sesuai dengan ketentuan hari yang berlaku,15
+54,Punishment,"Tidak mengikuti upacara bendera, atau kegiatan pagi/ siang tanpa alasan",15
+55,Punishment,Tidak memakai pakaian praktik selama melaksanakan pelajaran praktik,15
+56,Punishment,"Berpenampilan tidak sesuai dengan ketentuan sekolah (rambut gondrong, atau di cat, tidak memakai atribut sekolah yang berlaku, makeup berlebihan,  dll)",15
+57,Punishment,Melompat benteng sekolah untuk masuk mengikuti pelajaran,15
+58,Punishment,"Penyalahgunaan media sosial tidak sesuai dengan peruntukan pembelajaran (konten video/foto, status dan chat)",15
+59,Punishment,"Menghilangkan buku saku, Siswa wajib mengganti yang baru",5
+60,Punishment,"Tidak membawa buku saku, point pelanggaran bertambah",5
+61,Punishment,Tidak masuk sekolah tanpa keterangan,5
+62,Punishment,"Terlambat masuk, dipintu gerbang terhitung mulai pukul 07.15",5
+63,Punishment,Keluar lingkungan sekolah saat istirahat tanpa izin piket,5
+64,Punishment,Membuang sampah sembarangan,5
+65,Punishment,Baju dikeluarkan,5
+66,Punishment,"Berbicara kasar, tidak sopan, tidak senonoh",5
+67,Reward,Siswa berhasil meraih prestasi tingkat kecamatan melalui partisipasi aktif dan kemampuan yang baik dalam kegiatan perlombaan.,25
+68,Reward,Siswa menunjukkan prestasi tingkat kecamatan dengan memperoleh penghargaan pada kegiatan lomba antar sekolah.,25
+69,Reward,Siswa memiliki prestasi tingkat kecamatan yang membanggakan dan mampu membawa nama baik sekolah dalam perlombaan.,25
+70,Reward,Siswa aktif mengikuti kompetisi dan berhasil mendapatkan prestasi tingkat kecamatan sesuai bidang yang diikuti.,25
+71,Reward,"Prestasi tingkat kecamatan yang diraih Siswa menunjukkan sikap disiplin, kerja keras, dan tanggung jawab yang baik.",25
+72,Reward,Siswa memperoleh prestasi tingkat kecamatan dalam perlombaan akademik maupun nonakademik sebagai bentuk pencapaian Reward.,25
+73,Reward,Siswa memperoleh prestasi tingkat kabupaten dalam perlombaan pramuka tingkat kabupaten dengan meraih juara 2.,50
+74,Reward,Siswa berhasil meraih prestasi tingkat kabupaten pada ajang perlombaan pramuka dengan memperoleh juara 2.,50
+75,Reward,Siswa mendapatkan prestasi tingkat kabupaten dalam kegiatan lomba pramuka dan meraih juara 2.,50
+76,Reward,Siswa menorehkan prestasi tingkat kabupaten pada perlombaan pramuka tingkat kabupaten sebagai juara 2.,50
+77,Reward,Siswa memperoleh prestasi tingkat provinsi dalam perlombaan pramuka tingkat provinsi dan berhasil meraih juara 2.,75
+78,Reward,Siswa berhasil meraih prestasi tingkat provinsi pada kegiatan perlombaan pramuka dan memperoleh juara 2.,75
+79,Reward,Siswa mendapatkan penghargaan prestasi tingkat provinsi dalam lomba pramuka dengan perolehan juara 2.,75
+80,Reward,Siswa mendapatkan penghargaan prestasi tingkat provinsi dalam lomba pramuka dengan perolehan juara 2.,75
+81,Reward,Siswa menunjukkan prestasi membanggakan pada perlombaan pramuka tingkat provinsi dengan meraih juara 2.,75
+82,Reward,aktif bertanya saat pembelajaran,20
+83,Reward,aktif mengikuti diskusi kelas,20
+84,Reward,selalu hadir tepat waktu,20
+85,Reward,membantu teman belajar,20
+86,Reward,rajin mengerjakan tugas,20
+87,Reward,berpartisipasi dalam kegiatan sekolah,20
+88,Reward,aktif dalam organisasi sekolah,20
+89,Reward,menjaga kebersihan kelas,20
+90,Reward,berbicara sopan kepada guru,20
+91,Reward,mengikuti upacara dengan tertib,20
+92,Reward,selalu memakai atribut lengkap,20
+93,Reward,rajin membaca di perpustakaan,20
+94,Reward,menjadi ketua kelompok yang baik,20
+95,Reward,membantu guru saat kegiatan kelas,20
+96,Reward,aktif saat presentasi kelompok,20
+97,Reward,mendapat nilai terbaik di kelas,20
+98,Reward,selalu disiplin dalam belajar,20
+99,Reward,bertanggung jawab terhadap tugas,20
+100,Reward,aktif mengikuti ekstrakurikuler,20
+101,Reward,menjadi teladan bagi teman,20
+102,Reward,berprestasi dalam lomba sekolah,20
+103,Reward,aktif mengikuti praktik pembelajaran,20
+104,Reward,selalu menjaga kerapihan seragam,20
+105,Reward,datang lebih awal ke sekolah,20
+106,Reward,menyelesaikan tugas tepat waktu,20
+107,Reward,aktif memberikan ide saat diskusi,20
+108,Reward,rajin mengikuti kegiatan literasi,20
+109,Reward,memiliki sikap sopan dan santun,20
+110,Reward,membantu menjaga kebersihan lingkungan,20
+111,Reward,aktif dalam kegiatan sosial sekolah,20
+112,Reward,menjadi Siswa inspiratif di kelas,20
+113,Reward,berinisiatif membantu teman kesulitan,20
+114,Reward,konsisten hadir tanpa alpha,20
+115,Reward,aktif mengikuti kegiatan keagamaan,20
+116,Reward,menjadi anggota organisasi yang disiplin,20
+117,Reward,berprestasi di bidang olahraga,20
+118,Reward,berprestasi di bidang akademik,20
+119,Reward,berprestasi di bidang seni,20
+120,Reward,selalu menjaga ketertiban kelas,20
+121,Reward,aktif menjawab pertanyaan guru,20
+122,Reward,memiliki semangat belajar tinggi,20
+123,Reward,mengikuti kegiatan sekolah dengan baik,20
+124,Reward,menjadi Siswa paling disiplin,20
+125,Reward,rajin mengikuti piket kelas,20
+126,Reward,aktif dalam kerja kelompok,20
+127,Reward,menjadi Siswa dengan perilaku baik,20
+128,Reward,selalu menghormati guru dan teman,20
+129,Reward,aktif mengikuti seminar sekolah,20
+130,Reward,memiliki tanggung jawab tinggi,20
+131,Reward,aktif dalam kegiatan pramuka,20
+132,Reward,membantu teman memahami pelajaran,20
+133,Reward,selalu menjaga nama baik sekolah,20
+134,Reward,aktif dalam lomba antar kelas,20
+135,Reward,berhasil meraih juara kelas,20
+136,Reward,menjadi Siswa dengan kehadiran terbaik,20
+137,Reward,rajin mengikuti pelatihan sekolah,20
+138,Reward,aktif memberikan solusi saat diskusi,20
+139,Reward,menjadi Siswa teladan sekolah,20
+140,Reward,aktif dalam kegiatan kebersihan sekolah,20
+141,Reward,rajin mengumpulkan tugas harian,20
+142,Reward,memiliki komunikasi yang baik,20
+143,Reward,aktif dalam kegiatan kelas,20
+144,Reward,mampu bekerja sama dengan baik,20
+145,Reward,selalu bersikap jujur,20
+146,Reward,aktif mengikuti kegiatan Reward,20
+147,Reward,berani tampil presentasi di depan kelas,20
+148,Reward,membantu guru menyiapkan kelas,20
+149,Reward,aktif dalam kegiatan olahraga sekolah,20
+150,Reward,memiliki sikap disiplin tinggi,20
+151,Reward,aktif memberikan motivasi kepada teman,20
+152,Reward,selalu mematuhi tata tertib sekolah,20
+153,Reward,menjadi Siswa dengan etika baik,20
+154,Reward,aktif mengikuti kegiatan bakti sosial,20
+155,Reward,rajin belajar mandiri,20
+156,Reward,menjadi pengurus kelas yang bertanggung jawab,20
+157,Reward,aktif menjaga ketenangan kelas,20
+158,Reward,berprestasi dalam kompetisi sekolah,20
+159,Reward,aktif mengikuti kegiatan teknologi sekolah,20
+160,Reward,memiliki jiwa kepemimpinan yang baik,20
+161,Reward,aktif membantu kegiatan sekolah,20
+162,Reward,menjadi Siswa paling rajin,20
+163,Reward,aktif dalam kegiatan kewirausahaan sekolah,20
+164,Reward,memiliki perilaku santun di sekolah,20
+165,Reward,aktif dalam kegiatan keilmuan,20
+166,Reward,selalu menjaga kebersihan meja kelas,20
+167,Reward,aktif membantu teman saat praktik,20
+168,Reward,menjadi Siswa yang komunikatif,20
+169,Reward,aktif mengikuti pembelajaran praktik,20
+170,Reward,berprestasi dalam ujian sekolah,20
+171,Reward,aktif dalam kegiatan lingkungan sekolah,20
+172,Reward,selalu memberikan contoh baik,20
+173,Reward,aktif mengikuti kegiatan budaya sekolah,20
+174,Reward,menjadi Siswa dengan semangat tinggi,20
+175,Reward,aktif berkontribusi dalam kelompok,20
+176,Reward,rajin mengikuti pembinaan sekolah,20
+177,Reward,aktif mendukung kegiatan kelas,20
+178,Reward,menjadi Siswa yang peduli lingkungan,20
+179,Reward,aktif mengikuti pengarahan guru,20
+180,Reward,berhasil meningkatkan prestasi belajar,20
+181,Reward,aktif menjaga fasilitas sekolah,20
+182,Reward,selalu menunjukkan sikap Reward,20
+183,Reward,aktif dalam kegiatan edukatif sekolah,20
+184,Reward,Disiplin Tugas,20
+185,Reward,Rajin Belajar,20
+186,Reward,Tepat Waktu,20
+187,Reward,Disiplin Kehadiran,20
+188,Reward,Tanggung Jawab Belajar,20
+189,Reward,Konsisten Belajar,20
+190,Reward,Prestasi Akademik,20
+191,Reward,Nilai Unggul,20
+192,Reward,Juara Akademik,20
+193,Reward,Target Akademik Tercapai,20
+194,Reward,Kemampuan Akademik,20
+195,Reward,Prestasi Belajar,20
+196,Reward,Sopan Santun,20
+197,Reward,Disiplin Sikap,20
+198,Reward,Semangat Belajar,20
+199,Reward,Tanggung Jawab,20
+200,Reward,Percaya Diri,20
+201,Reward,Mandiri,20
+202,Reward,Disiplin Berpakaian,20
+203,Reward,Kerapihan Diri,20
+204,Reward,Taat Tata Tertib,20
+205,Reward,Peduli Kebersihan,20
+206,Reward,Penampilan Rapi,20
+207,Reward,Aktif Diskusi,20
+208,Reward,Aktif Bertanya,20
+209,Reward,Aktif Akademik,20
+210,Reward,Aktif Literasi,20
+211,Reward,Aktif Kegiatan Edukatif,20
+212,Reward,Kolaborasi Belajar,20
+213,Reward,Peduli Teman,20
+214,Reward,Kerja Sama,20
+215,Reward,Membantu Teman,20
+216,Reward,Peduli Lingkungan,20
+217,Reward,Sikap Reward,20
+218,Reward,Disiplin Tugas,20
+219,Reward,Disiplin Kehadiran,20
+220,Reward,Disiplin Belajar,20
+221,Reward,Disiplin Waktu,20
+222,Reward,Disiplin Kelas,20
+223,Reward,Disiplin Praktik,20
+224,Reward,Disiplin Tata Tertib,20
+225,Reward,Disiplin Pembelajaran,20
+226,Reward,Disiplin Pengumpulan Tugas,20
+227,Reward,Disiplin Jadwal Belajar,20
+228,Reward,Prestasi Akademik,20
+229,Reward,Nilai Unggul,20
+230,Reward,Juara Akademik,20
+231,Reward,Prestasi Belajar,20
+232,Reward,Prestasi Sekolah,20
+233,Reward,Hasil Belajar Optimal,20
+234,Reward,Nilai Terbaik,20
+235,Reward,Nilai Tinggi,20
+236,Reward,Akademik Unggul,20
+237,Reward,Penghargaan Akademik,20
+238,Reward,Tanggung Jawab Belajar,20
+239,Reward,Tanggung Jawab Tugas,20
+240,Reward,Tanggung Jawab Akademik,20
+241,Reward,Tanggung Jawab Praktik,20
+242,Reward,Konsisten Belajar,20
+243,Reward,Konsisten Prestasi,20
+244,Reward,Komitmen Belajar,20
+245,Reward,Dedikasi Pembelajaran,20
+246,Reward,Rajin Belajar,20
+247,Reward,Rajin Latihan,20
+248,Reward,Rajin Membaca,20
+249,Reward,Rajin Praktik,20
+250,Reward,Rajin Akademik,20
+251,Reward,Tekun Belajar,20
+252,Reward,Tekun Pembelajaran,20
+253,Reward,Tekun Praktik,20
+254,Reward,Semangat Belajar,20
+255,Reward,Motivasi Belajar,20
+256,Reward,Kerapihan Diri,20
+257,Reward,Disiplin Berpakaian,20
+258,Reward,Penampilan Rapi,20
+259,Reward,Kebersihan Diri,20
+260,Reward,Kerapihan Seragam,20
+261,Reward,Kerapihan Rambut,20
+262,Reward,Tertib Berpakaian,20
+263,Reward,Atribut Lengkap,20
+264,Reward,Penampilan Sopan,20
+265,Reward,Seragam Lengkap,20
+266,Reward,Sopan Santun,20
+267,Reward,Percaya Diri,20
+268,Reward,Mandiri,20
+269,Reward,Peduli Lingkungan,20
+270,Reward,Peduli Teman,20
+271,Reward,Kerja Sama,20
+272,Reward,Karakter Reward,20
+273,Reward,Sikap Reward,20
+274,Reward,Sikap Disiplin,20
+275,Reward,Etika Sekolah,20
+276,Reward,Kemampuan Akademik,20
+277,Reward,Kemampuan Analisis,20
+278,Reward,Berpikir Kritis,20
+279,Reward,Pemahaman Materi,20
+280,Reward,Kemampuan Praktik,20
+281,Reward,Kemampuan Teori,20
+282,Reward,Kompetensi Akademik,20
+283,Reward,Kemampuan Belajar,20
+284,Reward,Tepat Waktu,20
+285,Reward,Hadir Tepat Waktu,20
+286,Reward,Kehadiran Aktif,20
+287,Reward,Kehadiran Penuh,20
+288,Reward,Konsisten Hadir,20
+289,Reward,Disiplin Kehadiran,20
+290,Punishment,narkoba,100
+291,Punishment,psikotropika,100
+292,Punishment,alkohol,100
+293,Punishment,judi online,100
+294,Punishment,penganiayaan,100
+295,Punishment,keonaran,100
+296,Punishment,menghamili,100
+297,Punishment,pemerkosaan,100
+298,Punishment,tindik,100
+299,Punishment,tendok,100
+300,Punishment,memfitnah,50
+301,Punishment,merendahkan,50
+302,Punishment,senjata api,50

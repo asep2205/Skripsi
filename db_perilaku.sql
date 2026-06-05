@@ -784,7 +784,7 @@ CREATE TABLE `laporan_perilaku` (
   `id_user` int(11) NOT NULL,
   `teks_laporan` text NOT NULL,
   `label_prediksi` enum('Reward','Punishment') NOT NULL,
-  `id_aturan_tercocok` int(11) DEFAULT NULL,
+  `nama_perilaku` varchar(255) DEFAULT NULL,
   `poin_didapat` int(11) NOT NULL,
   `tgl_input` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -793,9 +793,9 @@ CREATE TABLE `laporan_perilaku` (
 -- Dumping data untuk tabel `laporan_perilaku`
 --
 
-INSERT INTO `laporan_perilaku` (`id_laporan`, `id_siswa`, `id_user`, `teks_laporan`, `label_prediksi`, `id_aturan_tercocok`, `poin_didapat`, `tgl_input`) VALUES
-(15, 1, 2, 'Siswa telat masuk sekolah tetapi membantu guru untuk membersihkan lingkunan sekolah', 'Punishment', 1, 100, '2026-05-26 11:22:15'),
-(16, 2, 2, 'Siswa telat masuk sekolah', 'Punishment', 1, 100, '2026-05-26 11:22:53');
+INSERT INTO `laporan_perilaku` (`id_laporan`, `id_siswa`, `id_user`, `teks_laporan`, `label_prediksi`, `poin_didapat`, `nama_perilaku`, `tgl_input`) VALUES
+(15, 1, 2, 'Siswa telat masuk sekolah tetapi membantu guru untuk membersihkan lingkunan sekolah', 'Punishment', 100, '', '2026-05-26 11:22:15'),
+(16, 2, 2, 'Siswa telat masuk sekolah', 'Punishment', 100, '', '2026-05-26 11:22:53');
 
 -- --------------------------------------------------------
 
@@ -1157,11 +1157,11 @@ ALTER TABLE `dataset_training`
 --
 -- Indeks untuk tabel `laporan_perilaku`
 --
+
 ALTER TABLE `laporan_perilaku`
   ADD PRIMARY KEY (`id_laporan`),
   ADD KEY `id_siswa` (`id_siswa`),
-  ADD KEY `id_user` (`id_user`),
-  ADD KEY `id_aturan_tercocok` (`id_aturan_tercocok`);
+  ADD KEY `id_user` (`id_user`);
 
 --
 -- Indeks untuk tabel `master_poin`
@@ -1226,8 +1226,7 @@ ALTER TABLE `users`
 --
 ALTER TABLE `laporan_perilaku`
   ADD CONSTRAINT `laporan_perilaku_ibfk_1` FOREIGN KEY (`id_siswa`) REFERENCES `siswa` (`id_siswa`),
-  ADD CONSTRAINT `laporan_perilaku_ibfk_2` FOREIGN KEY (`id_user`) REFERENCES `users` (`id_user`),
-  ADD CONSTRAINT `laporan_perilaku_ibfk_3` FOREIGN KEY (`id_aturan_tercocok`) REFERENCES `master_poin` (`id_aturan`);
+  ADD CONSTRAINT `laporan_perilaku_ibfk_2` FOREIGN KEY (`id_user`) REFERENCES `users` (`id_user`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

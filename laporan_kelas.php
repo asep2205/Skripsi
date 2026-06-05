@@ -69,10 +69,20 @@ $siswa_id = $_GET['siswa'] ?? 0;
         if (!$siswa) { echo "<p>Siswa tidak ditemukan.</p>"; exit; }
         $kelas = $siswa['kelas'];
         ?>
+        <?php
+        $qpoin = mysqli_query($conn, "
+            SELECT
+                COALESCE(SUM(CASE WHEN label_prediksi = 'Reward' THEN poin_didapat ELSE 0 END), 0) as total_reward,
+                COALESCE(SUM(CASE WHEN label_prediksi = 'Punishment' THEN poin_didapat ELSE 0 END), 0) as total_punishment
+            FROM laporan_perilaku
+            WHERE id_siswa = '$siswa_id'
+        ");
+        $poin_siswa = mysqli_fetch_assoc($qpoin);
+        ?>
         <div style="margin-bottom:15px;padding:12px;background:#e9f7fe;border-radius:4px;">
             <strong><?= htmlspecialchars($siswa['nama_siswa']) ?></strong> (<?= htmlspecialchars($siswa['nis']) ?>) - <?= htmlspecialchars($siswa['kelas']) ?><br>
-            <span class="text-green">Total Reward: +<?= $siswa['total_poin_reward'] ?></span> |
-            <span class="text-red">Total Punishment: -<?= $siswa['total_poin_punishment'] ?></span>
+            <span class="text-green">Total Reward: +<?= $poin_siswa['total_reward'] ?></span> |
+            <span class="text-red">Total Punishment: -<?= $poin_siswa['total_punishment'] ?></span>
         </div>
 
         <table>
@@ -89,11 +99,9 @@ $siswa_id = $_GET['siswa'] ?? 0;
             <tbody>
                 <?php
                 $q = mysqli_query($conn, "
-                    SELECT lp.*, mp.nama_perilaku 
-                    FROM laporan_perilaku lp 
-                    LEFT JOIN master_poin mp ON lp.id_aturan_tercocok = mp.id_aturan 
-                    WHERE lp.id_siswa = '$siswa_id' 
-                    ORDER BY lp.tgl_input DESC
+                    SELECT * FROM laporan_perilaku 
+                    WHERE id_siswa = '$siswa_id' 
+                    ORDER BY tgl_input DESC
                 ");
                 $no = 1;
                 while ($r = mysqli_fetch_assoc($q)):
@@ -129,11 +137,20 @@ $siswa_id = $_GET['siswa'] ?? 0;
             </thead>
             <tbody>
                 <?php
-                $q = mysqli_query($conn, "SELECT * FROM siswa WHERE kelas = '$kelas' ORDER BY total_poin_punishment DESC, total_poin_reward DESC");
+                $q = mysqli_query($conn, "
+                    SELECT s.*,
+                           COALESCE(SUM(CASE WHEN lp.label_prediksi = 'Reward' THEN lp.poin_didapat ELSE 0 END), 0) as total_reward,
+                           COALESCE(SUM(CASE WHEN lp.label_prediksi = 'Punishment' THEN lp.poin_didapat ELSE 0 END), 0) as total_punishment
+                    FROM siswa s
+                    LEFT JOIN laporan_perilaku lp ON s.id_siswa = lp.id_siswa
+                    WHERE s.kelas = '$kelas'
+                    GROUP BY s.id_siswa
+                    ORDER BY total_punishment DESC, total_reward DESC
+                ");
                 $no = 1;
                 while ($r = mysqli_fetch_assoc($q)):
-                    $reward = $r['total_poin_reward'];
-                    $punishment = $r['total_poin_punishment'];
+                    $reward = $r['total_reward'];
+                    $punishment = $r['total_punishment'];
                     if ($reward > $punishment) {
                         $keputusan = "<span class='badge badge-success'>Reward</span>";
                     } elseif ($punishment > $reward) {
@@ -158,14 +175,21 @@ $siswa_id = $_GET['siswa'] ?? 0;
     <?php else: ?>
         <?php
         $q = mysqli_query($conn, "
-            SELECT kelas, 
-                   COUNT(*) as jumlah_siswa, 
-                   SUM(total_poin_reward) as total_reward, 
-                   SUM(total_poin_punishment) as total_punishment,
-                   ROUND(AVG(total_poin_reward), 1) as avg_reward,
-                   ROUND(AVG(total_poin_punishment), 1) as avg_punishment
-            FROM siswa 
-            GROUP BY kelas 
+            SELECT ps.kelas,
+                   COUNT(*) as jumlah_siswa,
+                   SUM(ps.total_reward) as total_reward,
+                   SUM(ps.total_punishment) as total_punishment,
+                   ROUND(AVG(ps.total_reward), 1) as avg_reward,
+                   ROUND(AVG(ps.total_punishment), 1) as avg_punishment
+            FROM (
+                SELECT s.id_siswa, s.kelas,
+                       COALESCE(SUM(CASE WHEN lp.label_prediksi = 'Reward' THEN lp.poin_didapat ELSE 0 END), 0) as total_reward,
+                       COALESCE(SUM(CASE WHEN lp.label_prediksi = 'Punishment' THEN lp.poin_didapat ELSE 0 END), 0) as total_punishment
+                FROM siswa s
+                LEFT JOIN laporan_perilaku lp ON s.id_siswa = lp.id_siswa
+                GROUP BY s.id_siswa
+            ) ps
+            GROUP BY ps.kelas
             ORDER BY total_punishment DESC, total_reward DESC
         ");
         ?>
