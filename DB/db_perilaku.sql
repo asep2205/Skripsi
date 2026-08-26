@@ -2,10 +2,10 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Host: 127.0.0.1
--- Waktu pembuatan: 26 Agu 2026 pada 09.59
--- Versi server: 10.4.32-MariaDB
--- Versi PHP: 8.2.12
+-- Host: localhost
+-- Generation Time: Aug 26, 2026 at 11:53 AM
+-- Server version: 10.4.28-MariaDB
+-- PHP Version: 8.0.28
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -24,7 +24,7 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `dataset_training`
+-- Table structure for table `dataset_training`
 --
 
 CREATE TABLE `dataset_training` (
@@ -34,7 +34,7 @@ CREATE TABLE `dataset_training` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data untuk tabel `dataset_training`
+-- Dumping data for table `dataset_training`
 --
 
 INSERT INTO `dataset_training` (`id_data`, `teks_sampel`, `label`) VALUES
@@ -779,7 +779,7 @@ INSERT INTO `dataset_training` (`id_data`, `teks_sampel`, `label`) VALUES
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `evaluasi_siswa`
+-- Table structure for table `evaluasi_siswa`
 --
 
 CREATE TABLE `evaluasi_siswa` (
@@ -791,7 +791,7 @@ CREATE TABLE `evaluasi_siswa` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data untuk tabel `evaluasi_siswa`
+-- Dumping data for table `evaluasi_siswa`
 --
 
 INSERT INTO `evaluasi_siswa` (`id_evaluasi`, `poin`, `kategori`, `tindakan`, `jenis`) VALUES
@@ -811,13 +811,14 @@ INSERT INTO `evaluasi_siswa` (`id_evaluasi`, `poin`, `kategori`, `tindakan`, `je
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `laporan_prilaku`
+-- Table structure for table `laporan_prilaku`
 --
 
 CREATE TABLE `laporan_prilaku` (
   `id_laporan` int(11) NOT NULL,
   `id_siswa` int(11) NOT NULL,
   `id_user` int(11) NOT NULL,
+  `id_periode` int(11) DEFAULT NULL,
   `teks_laporan` text NOT NULL,
   `label_prediksi` enum('Reward','Punishment') NOT NULL,
   `kecocokan_kata` text NOT NULL,
@@ -832,22 +833,25 @@ CREATE TABLE `laporan_prilaku` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data untuk tabel `laporan_prilaku`
+-- Dumping data for table `laporan_prilaku`
 --
 
-INSERT INTO `laporan_prilaku` (`id_laporan`, `id_siswa`, `id_user`, `teks_laporan`, `label_prediksi`, `kecocokan_kata`, `poin_didapat`, `akurasi_map`, `foto`, `tgl_input`) VALUES
-(192, 10, 1, 'kamila telat masuk sekolah', 'Punishment', 'siswa datang terlambat karena kesiangan', 10, '78%', '', '2026-08-13 03:28:11'),
-(193, 28, 1, 'siswa ini telat masuk sekolah', 'Punishment', 'siswa telat masuk sekolah dan dihukum', 10, '79%', 'uploads/bukti_laporan/bukti_28_1786592535_6a7d3d17a1322.jpg', '2026-08-13 03:42:15'),
-(194, 14, 1, 'siswa ini bolos masuk sekolah karena telat', 'Punishment', 'siswa telat masuk sekolah dan dihukum', 10, '58%', 'uploads/bukti_laporan/bukti_14_1786668294_6a7e6506ba4a9.png', '2026-08-14 00:44:55'),
-(195, 14, 1, 'siswa terajin di kelas XII-RPL-1 berdasarkan rekap kehadiran dan pengumpulan tugas bulan ini.', 'Reward', 'siswa menunda pengumpulan tugas', 10, '79%', 'uploads/bukti_laporan/bukti_14_1786668438_6a7e65969ef89.png', '2026-08-14 00:47:19'),
-(196, 15, 1, 'REY menjadi siswa terajin di kelas XII-RPL-1 berdasarkan rekap kehadiran dan pengumpulan tugas bulan ini.', 'Reward', 'siswa menunda pengumpulan tugas', 20, '79%', 'uploads/bukti_laporan/bukti_15_1786668507_6a7e65dbb7b38.png', '2026-08-14 00:48:27'),
-(197, 99, 1, 'siswa terajin di kelas XII-RPL-1 berdasarkan rekap kehadiran dan pengumpulan tugas bulan ini.', 'Reward', 'siswa menunda pengumpulan tugas', 10, '79%', 'uploads/bukti_laporan/bukti_99_1786668611_6a7e6643982f4.jpg', '2026-08-14 00:50:11'),
-(198, 21, 1, 'siswa terlambat masuk kelas', 'Punishment', 'siswa terlambat masuk kelas', 10, '100%', 'uploads/bukti_laporan/bukti_21_1787729975_6a8e98379846d.jpg', '2026-08-26 07:39:36');
+INSERT INTO `laporan_prilaku` (`id_laporan`, `id_siswa`, `id_user`, `id_periode`, `teks_laporan`, `label_prediksi`, `kecocokan_kata`, `poin_didapat`, `akurasi_map`, `foto`, `status_verifikasi`, `id_verifikator`, `tgl_verifikasi`, `catatan_verifikasi`, `tgl_input`) VALUES
+(192, 10, 1, 1, 'kamila telat masuk sekolah', 'Punishment', 'siswa datang terlambat karena kesiangan', 10, '78%', '', 'disetujui', NULL, NULL, NULL, '2026-08-13 03:28:11'),
+(193, 28, 1, 1, 'siswa ini telat masuk sekolah', 'Punishment', 'siswa telat masuk sekolah dan dihukum', 10, '79%', 'uploads/bukti_laporan/bukti_28_1786592535_6a7d3d17a1322.jpg', 'disetujui', NULL, NULL, NULL, '2026-08-13 03:42:15'),
+(194, 14, 1, 1, 'siswa ini bolos masuk sekolah karena telat', 'Punishment', 'siswa telat masuk sekolah dan dihukum', 10, '58%', 'uploads/bukti_laporan/bukti_14_1786668294_6a7e6506ba4a9.png', 'disetujui', NULL, NULL, NULL, '2026-08-14 00:44:55'),
+(195, 14, 1, 1, 'siswa terajin di kelas XII-RPL-1 berdasarkan rekap kehadiran dan pengumpulan tugas bulan ini.', 'Reward', 'siswa menunda pengumpulan tugas', 10, '79%', 'uploads/bukti_laporan/bukti_14_1786668438_6a7e65969ef89.png', 'disetujui', NULL, NULL, NULL, '2026-08-14 00:47:19'),
+(196, 15, 1, 1, 'REY menjadi siswa terajin di kelas XII-RPL-1 berdasarkan rekap kehadiran dan pengumpulan tugas bulan ini.', 'Reward', 'siswa menunda pengumpulan tugas', 20, '79%', 'uploads/bukti_laporan/bukti_15_1786668507_6a7e65dbb7b38.png', 'disetujui', NULL, NULL, NULL, '2026-08-14 00:48:27'),
+(197, 99, 1, 1, 'siswa terajin di kelas XII-RPL-1 berdasarkan rekap kehadiran dan pengumpulan tugas bulan ini.', 'Reward', 'siswa menunda pengumpulan tugas', 10, '79%', 'uploads/bukti_laporan/bukti_99_1786668611_6a7e6643982f4.jpg', 'disetujui', NULL, NULL, NULL, '2026-08-14 00:50:11'),
+(198, 21, 1, 1, 'siswa terlambat masuk kelas', 'Punishment', 'siswa terlambat masuk kelas', 10, '100%', 'uploads/bukti_laporan/bukti_21_1787729975_6a8e98379846d.jpg', 'disetujui', NULL, NULL, NULL, '2026-08-26 07:39:36'),
+(199, 20, 1, 1, 'telat sekolah', 'Punishment', 'siswa telat mengumpulkan tugas sekolah', 10, '64%', 'uploads/bukti_laporan/bukti_20_1787733235_6a8ea4f30e47a.png', 'disetujui', 1, '2026-08-26 08:37:22', '', '2026-08-26 08:33:55'),
+(200, 21, 1, 1, 'telat modol', 'Punishment', 'siswa telat mengumpulkan tugas sekolah', 10, '59%', 'uploads/bukti_laporan/bukti_21_1787733460_6a8ea5d4852b5.png', 'disetujui', 1, '2026-08-26 08:41:24', '', '2026-08-26 08:37:40'),
+(201, 20, 1, 2, 'telat', 'Punishment', 'siswa telat mengumpulkan tugas sekolah', 10, '59%', 'uploads/bukti_laporan/bukti_20_1787736969_6a8eb38912c5e.png', 'disetujui', 1, '2026-08-26 09:36:18', '', '2026-08-26 09:36:09');
 
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `master_poin`
+-- Table structure for table `master_poin`
 --
 
 CREATE TABLE `master_poin` (
@@ -858,7 +862,7 @@ CREATE TABLE `master_poin` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data untuk tabel `master_poin`
+-- Dumping data for table `master_poin`
 --
 
 INSERT INTO `master_poin` (`id_aturan`, `jenis`, `nama_perilaku`, `poin`) VALUES
@@ -1020,13 +1024,110 @@ INSERT INTO `master_poin` (`id_aturan`, `jenis`, `nama_perilaku`, `poin`) VALUES
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `remisi`
+-- Table structure for table `periode_akademik`
+--
+
+CREATE TABLE `periode_akademik` (
+  `id_periode` int(11) NOT NULL,
+  `tahun_ajaran` varchar(9) NOT NULL,
+  `tanggal_mulai` date NOT NULL,
+  `tanggal_selesai` date NOT NULL,
+  `status` enum('aktif','arsip') NOT NULL DEFAULT 'arsip',
+  `dibuat_pada` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `periode_akademik`
+--
+
+INSERT INTO `periode_akademik` (`id_periode`, `tahun_ajaran`, `tanggal_mulai`, `tanggal_selesai`, `status`, `dibuat_pada`) VALUES
+(1, 'Sebelumny', '2000-01-01', '2000-06-30', 'arsip', '2026-08-26 09:27:13'),
+(2, '2026/2027', '2026-01-01', '2026-12-31', 'arsip', '2026-08-26 09:28:08'),
+(3, '2024/2025', '2026-01-01', '2026-12-31', 'arsip', '2026-08-26 09:28:39'),
+(5, '2027/2028', '2027-01-01', '2028-01-26', 'aktif', '2026-08-26 09:37:23');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `rekap_poin_periode`
+--
+
+CREATE TABLE `rekap_poin_periode` (
+  `id_rekap` int(11) NOT NULL,
+  `id_periode` int(11) NOT NULL,
+  `id_siswa` int(11) NOT NULL,
+  `total_poin_reward` int(11) NOT NULL DEFAULT 0,
+  `total_poin_punishment` int(11) NOT NULL DEFAULT 0,
+  `dibuat_pada` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `rekap_poin_periode`
+--
+
+INSERT INTO `rekap_poin_periode` (`id_rekap`, `id_periode`, `id_siswa`, `total_poin_reward`, `total_poin_punishment`, `dibuat_pada`) VALUES
+(1, 2, 1, 0, 0, '2026-08-26 09:39:34'),
+(2, 2, 2, 0, 0, '2026-08-26 09:39:34'),
+(3, 2, 3, 0, 0, '2026-08-26 09:39:34'),
+(4, 2, 4, 0, 0, '2026-08-26 09:39:34'),
+(5, 2, 5, 0, 0, '2026-08-26 09:39:34'),
+(6, 2, 6, 0, 0, '2026-08-26 09:39:34'),
+(7, 2, 7, 0, 0, '2026-08-26 09:39:34'),
+(8, 2, 8, 0, 0, '2026-08-26 09:39:34'),
+(9, 2, 9, 0, 0, '2026-08-26 09:39:34'),
+(10, 2, 10, 0, 0, '2026-08-26 09:39:34'),
+(11, 2, 11, 0, 0, '2026-08-26 09:39:34'),
+(12, 2, 12, 0, 0, '2026-08-26 09:39:34'),
+(13, 2, 13, 0, 0, '2026-08-26 09:39:34'),
+(14, 2, 14, 0, 0, '2026-08-26 09:39:34'),
+(15, 2, 15, 0, 0, '2026-08-26 09:39:34'),
+(16, 2, 16, 0, 0, '2026-08-26 09:39:34'),
+(17, 2, 17, 0, 0, '2026-08-26 09:39:34'),
+(18, 2, 18, 0, 0, '2026-08-26 09:39:34'),
+(19, 2, 19, 0, 0, '2026-08-26 09:39:34'),
+(20, 2, 20, 0, 10, '2026-08-26 09:39:34'),
+(21, 2, 21, 0, 0, '2026-08-26 09:39:34'),
+(22, 2, 22, 0, 0, '2026-08-26 09:39:34'),
+(23, 2, 23, 0, 0, '2026-08-26 09:39:34'),
+(24, 2, 24, 0, 0, '2026-08-26 09:39:34'),
+(25, 2, 25, 0, 0, '2026-08-26 09:39:34'),
+(26, 2, 26, 0, 0, '2026-08-26 09:39:34'),
+(27, 2, 27, 0, 0, '2026-08-26 09:39:34'),
+(28, 2, 28, 0, 0, '2026-08-26 09:39:34'),
+(29, 2, 29, 0, 0, '2026-08-26 09:39:34'),
+(30, 2, 30, 0, 0, '2026-08-26 09:39:34'),
+(31, 2, 31, 0, 0, '2026-08-26 09:39:34'),
+(32, 2, 32, 0, 0, '2026-08-26 09:39:34'),
+(33, 2, 33, 0, 0, '2026-08-26 09:39:34'),
+(34, 2, 34, 0, 0, '2026-08-26 09:39:34'),
+(35, 2, 35, 0, 0, '2026-08-26 09:39:34'),
+(36, 2, 36, 0, 0, '2026-08-26 09:39:34'),
+(37, 2, 37, 0, 0, '2026-08-26 09:39:34'),
+(38, 2, 38, 0, 0, '2026-08-26 09:39:34'),
+(39, 2, 39, 0, 0, '2026-08-26 09:39:34'),
+(40, 2, 40, 0, 0, '2026-08-26 09:39:34'),
+(41, 2, 41, 0, 0, '2026-08-26 09:39:34'),
+(42, 2, 42, 0, 0, '2026-08-26 09:39:34'),
+(43, 2, 43, 0, 0, '2026-08-26 09:39:34'),
+(44, 2, 44, 0, 0, '2026-08-26 09:39:34'),
+(45, 2, 45, 0, 0, '2026-08-26 09:39:34'),
+(46, 2, 46, 0, 0, '2026-08-26 09:39:34'),
+(47, 2, 47, 0, 0, '2026-08-26 09:39:34'),
+(48, 2, 48, 0, 0, '2026-08-26 09:39:34'),
+(49, 2, 99, 0, 0, '2026-08-26 09:39:34'),
+(50, 2, 100, 0, 0, '2026-08-26 09:39:34');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `remisi`
 --
 
 CREATE TABLE `remisi` (
   `id_remisi` int(11) NOT NULL,
   `id_siswa` int(11) NOT NULL,
   `id_user` int(11) NOT NULL,
+  `id_periode` int(11) DEFAULT NULL,
   `poin_remisi` int(12) NOT NULL,
   `pengajuan` enum('konfirmasi','pengajuan') NOT NULL,
   `keterangan` text DEFAULT NULL,
@@ -1035,18 +1136,18 @@ CREATE TABLE `remisi` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data untuk tabel `remisi`
+-- Dumping data for table `remisi`
 --
 
-INSERT INTO `remisi` (`id_remisi`, `id_siswa`, `id_user`, `poin_remisi`, `pengajuan`, `keterangan`, `bukti`, `tgl_input`) VALUES
-(5, 43, 1, 40, 'konfirmasi', 'Sistem Konfirmasi Otomatis: Sinkronisasi pemotongan 40 poin sanksi menggunakan poin reward.', NULL, '2026-08-01 22:10:47'),
-(6, 8, 1, 10, 'pengajuan', 'oke', 'uploads/bukti_remisi/bukti_remisi_8_1786782102_6a8021967b909.jpg', '2026-08-15 15:21:42'),
-(7, 8, 1, 50, 'pengajuan', 'fs', 'uploads/bukti_remisi/bukti_remisi_8_1786788969_6a803c695483e.jpg', '2026-08-15 17:16:09');
+INSERT INTO `remisi` (`id_remisi`, `id_siswa`, `id_user`, `id_periode`, `poin_remisi`, `pengajuan`, `keterangan`, `bukti`, `tgl_input`) VALUES
+(5, 43, 1, 1, 40, 'konfirmasi', 'Sistem Konfirmasi Otomatis: Sinkronisasi pemotongan 40 poin sanksi menggunakan poin reward.', NULL, '2026-08-01 22:10:47'),
+(6, 8, 1, 1, 10, 'pengajuan', 'oke', 'uploads/bukti_remisi/bukti_remisi_8_1786782102_6a8021967b909.jpg', '2026-08-15 15:21:42'),
+(7, 8, 1, 1, 50, 'pengajuan', 'fs', 'uploads/bukti_remisi/bukti_remisi_8_1786788969_6a803c695483e.jpg', '2026-08-15 17:16:09');
 
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `siswa`
+-- Table structure for table `siswa`
 --
 
 CREATE TABLE `siswa` (
@@ -1059,71 +1160,72 @@ CREATE TABLE `siswa` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data untuk tabel `siswa`
+-- Dumping data for table `siswa`
 --
 
 INSERT INTO `siswa` (`id_siswa`, `nis`, `nama_siswa`, `kelas`, `total_poin_reward`, `total_poin_punishment`) VALUES
-(1, '232401001', 'Algam Risgi Sugirman', 'XII-RPL-1', 0, 10),
+(1, '232401001', 'Algam Risgi Sugirman', 'XII-RPL-1', 0, 0),
 (2, '232401002', 'Cikal Putra Subrani', 'XII-RPL-1', 0, 0),
-(3, '232401003', 'Dodi Aril Fauzi', 'XII-RPL-1', 75, 0),
-(4, '232401005', 'Eki Apriansyah', 'XII-RPL-1', 20, 50),
-(5, '232401004', 'Eneng Salsa Nabila', 'XII-RPL-1', 30, 30),
-(6, '232401006', 'Erwin Suherwan', 'XII-RPL-1', 70, 0),
-(7, '232401007', 'Fauzan Sya\'ban Nur\'islam', 'XII-RPL-1', 40, 30),
-(8, '232401008', 'Hermawan Anggara', 'XII-RPL-1', 40, 60),
-(9, '232401009', 'Jannata Tsamaniya Arsyistawaa', 'XII-RPL-1', 0, 60),
-(10, '232401011', 'Kamilaniya Tsaqila', 'XII-RPL-1', 20, 30),
-(11, '232401012', 'Kurniasandi Aunurrafiq', 'XII-RPL-1', 20, 10),
-(12, '232401019', 'Mirna Sulastri', 'XII-RPL-1', 85, 0),
-(13, '232401013', 'Niswah Kamilah Nur Ala', 'XII-RPL-1', 0, 30),
-(14, '232401014', 'Ramdan Alwiansyah', 'XII-RPL-1', 60, 50),
-(15, '232401015', 'Rey Gustiawan', 'XII-RPL-1', 90, 50),
-(16, '232401016', 'Siti Hasanah', 'XII-RPL-1', 10, 0),
-(17, '232401017', 'Suryana', 'XII-RPL-1', 50, 10),
-(18, '232401018', 'Tiara Amanda Putri Fatriana', 'XII-RPL-1', 20, 10),
+(3, '232401003', 'Dodi Aril Fauzi', 'XII-RPL-1', 0, 0),
+(4, '232401005', 'Eki Apriansyah', 'XII-RPL-1', 0, 0),
+(5, '232401004', 'Eneng Salsa Nabila', 'XII-RPL-1', 0, 0),
+(6, '232401006', 'Erwin Suherwan', 'XII-RPL-1', 0, 0),
+(7, '232401007', 'Fauzan Sya\'ban Nur\'islam', 'XII-RPL-1', 0, 0),
+(8, '232401008', 'Hermawan Anggara', 'XII-RPL-1', 0, 0),
+(9, '232401009', 'Jannata Tsamaniya Arsyistawaa', 'XII-RPL-1', 0, 0),
+(10, '232401011', 'Kamilaniya Tsaqila', 'XII-RPL-1', 0, 0),
+(11, '232401012', 'Kurniasandi Aunurrafiq', 'XII-RPL-1', 0, 0),
+(12, '232401019', 'Mirna Sulastri', 'XII-RPL-1', 0, 0),
+(13, '232401013', 'Niswah Kamilah Nur Ala', 'XII-RPL-1', 0, 0),
+(14, '232401014', 'Ramdan Alwiansyah', 'XII-RPL-1', 0, 0),
+(15, '232401015', 'Rey Gustiawan', 'XII-RPL-1', 0, 0),
+(16, '232401016', 'Siti Hasanah', 'XII-RPL-1', 0, 0),
+(17, '232401017', 'Suryana', 'XII-RPL-1', 0, 0),
+(18, '232401018', 'Tiara Amanda Putri Fatriana', 'XII-RPL-1', 0, 0),
 (19, '232401020', 'Wahid Dicky Nugroho', 'XII-RPL-1', 0, 0),
-(20, '232401021', 'Abdul Hakim', 'XII-RPL-2', 0, 40),
-(21, '232401022', 'Aditya Putra Nurahman', 'XII-RPL-2', 30, 40),
-(22, '232401027', 'Adrian Bagus Ramadani', 'XII-RPL-2', 10, 0),
-(23, '232401023', 'Agil Al Pauji', 'XII-RPL-2', 0, 30),
-(24, '232401024', 'Agunawan', 'XII-RPL-2', 0, 10),
-(25, '232401025', 'Ali Akbar Nur Subhki', 'XII-RPL-2', 0, 30),
-(26, '232401026', 'Alma Defaulia Maharani', 'XII-RPL-2', 0, 10),
-(27, '232401028', 'Arabi Rudinata', 'XII-RPL-2', 0, 20),
-(28, '232401029', 'Ardiansyah', 'XII-RPL-2', 20, 30),
+(20, '232401021', 'Abdul Hakim', 'XII-RPL-2', 0, 0),
+(21, '232401022', 'Aditya Putra Nurahman', 'XII-RPL-2', 0, 0),
+(22, '232401027', 'Adrian Bagus Ramadani', 'XII-RPL-2', 0, 0),
+(23, '232401023', 'Agil Al Pauji', 'XII-RPL-2', 0, 0),
+(24, '232401024', 'Agunawan', 'XII-RPL-2', 0, 0),
+(25, '232401025', 'Ali Akbar Nur Subhki', 'XII-RPL-2', 0, 0),
+(26, '232401026', 'Alma Defaulia Maharani', 'XII-RPL-2', 0, 0),
+(27, '232401028', 'Arabi Rudinata', 'XII-RPL-2', 0, 0),
+(28, '232401029', 'Ardiansyah', 'XII-RPL-2', 0, 0),
 (29, '232401030', 'Astri Lianti', 'XII-RPL-2', 0, 0),
-(30, '232401031', 'Aura Putri Ramadani', 'XII-RPL-2', 0, 20),
-(31, '232401032', 'Erlangga Wiradinata', 'XII-RPL-2', 0, 30),
-(32, '232401033', 'Ikhsan Alfandi Pratama', 'XII-RPL-2', 0, 70),
-(33, '232401035', 'Kireina Nazrila Irawan', 'XII-RPL-2', 10, 0),
-(34, '232401040', 'Moch. Viras Algazali', 'XII-RPL-2', 20, 30),
-(35, '232401039', 'Muhamad Rizki Andika', 'XII-RPL-2', 60, 50),
+(30, '232401031', 'Aura Putri Ramadani', 'XII-RPL-2', 0, 0),
+(31, '232401032', 'Erlangga Wiradinata', 'XII-RPL-2', 0, 0),
+(32, '232401033', 'Ikhsan Alfandi Pratama', 'XII-RPL-2', 0, 0),
+(33, '232401035', 'Kireina Nazrila Irawan', 'XII-RPL-2', 0, 0),
+(34, '232401040', 'Moch. Viras Algazali', 'XII-RPL-2', 0, 0),
+(35, '232401039', 'Muhamad Rizki Andika', 'XII-RPL-2', 0, 0),
 (36, '232401036', 'Muhamad Sidik', 'XII-RPL-2', 0, 0),
-(37, '232401042', 'Naila Nazwa Latifa', 'XII-RPL-2', 20, 0),
-(38, '232401043', 'Nyai Indah Lestari', 'XII-RPL-2', 0, 10),
-(39, '232401044', 'Raka Leaner Yacob Boom', 'XII-RPL-2', 10, 60),
+(37, '232401042', 'Naila Nazwa Latifa', 'XII-RPL-2', 0, 0),
+(38, '232401043', 'Nyai Indah Lestari', 'XII-RPL-2', 0, 0),
+(39, '232401044', 'Raka Leaner Yacob Boom', 'XII-RPL-2', 0, 0),
 (40, '232401045', 'Ratu Chika Sri Astuti', 'XII-RPL-2', 0, 0),
-(41, '232401046', 'Raysad Radana', 'XII-RPL-2', 35, 10),
-(42, '232401047', 'Rehan Ramadan', 'XII-RPL-2', 115, 0),
-(43, '232401049', 'Rendi Maulana', 'XII-RPL-2', 0, 10),
-(44, '232401048', 'Resta Septiani', 'XII-RPL-2', 20, 70),
+(41, '232401046', 'Raysad Radana', 'XII-RPL-2', 0, 0),
+(42, '232401047', 'Rehan Ramadan', 'XII-RPL-2', 0, 0),
+(43, '232401049', 'Rendi Maulana', 'XII-RPL-2', 0, 0),
+(44, '232401048', 'Resta Septiani', 'XII-RPL-2', 0, 0),
 (45, '232401050', 'Rian Saputra', 'XII-RPL-2', 0, 0),
-(46, '232401052', 'Sahilmi', 'XII-RPL-2', 10, 10),
-(47, '232401053', 'Satria Nugraha Tri Wiguna', 'XII-RPL-2', 10, 20),
-(48, '232401054', 'Virzy Pratama', 'XII-RPL-2', 60, 0),
-(99, '1234', 'Aditya', 'XII-RPL-1', 10, 0),
+(46, '232401052', 'Sahilmi', 'XII-RPL-2', 0, 0),
+(47, '232401053', 'Satria Nugraha Tri Wiguna', 'XII-RPL-2', 0, 0),
+(48, '232401054', 'Virzy Pratama', 'XII-RPL-2', 0, 0),
+(99, '1234', 'Aditya', 'XII-RPL-1', 0, 0),
 (100, '3333', 'ASEP SUKANDAR', 'XII-AKL-1', 0, 0);
 
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `tindaklanjut`
+-- Table structure for table `tindaklanjut`
 --
 
 CREATE TABLE `tindaklanjut` (
   `id_tindak` int(10) NOT NULL,
   `id_siswa` int(10) NOT NULL,
   `id_users` int(10) DEFAULT NULL,
+  `id_periode` int(11) DEFAULT NULL,
   `ketegoriRP` varchar(25) NOT NULL,
   `tindaklanjut` text DEFAULT NULL,
   `poin` varchar(25) DEFAULT NULL,
@@ -1131,16 +1233,16 @@ CREATE TABLE `tindaklanjut` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data untuk tabel `tindaklanjut`
+-- Dumping data for table `tindaklanjut`
 --
 
-INSERT INTO `tindaklanjut` (`id_tindak`, `id_siswa`, `id_users`, `ketegoriRP`, `tindaklanjut`, `poin`, `foto`) VALUES
-(2, 12, 1, 'Reward', 'Tindakan/Apresiasi: Piagam penghargaan + hadiah pembinaan\n\nTindak Lanjut: pemberian mendali', '20', 'uploads/tindaklanjut/tindak_12_1786788024_6a8038b806102.png');
+INSERT INTO `tindaklanjut` (`id_tindak`, `id_siswa`, `id_users`, `id_periode`, `ketegoriRP`, `tindaklanjut`, `poin`, `foto`) VALUES
+(2, 12, 1, 1, 'Reward', 'Tindakan/Apresiasi: Piagam penghargaan + hadiah pembinaan\n\nTindak Lanjut: pemberian mendali', '20', 'uploads/tindaklanjut/tindak_12_1786788024_6a8038b806102.png');
 
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `users`
+-- Table structure for table `users`
 --
 
 CREATE TABLE `users` (
@@ -1152,7 +1254,7 @@ CREATE TABLE `users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data untuk tabel `users`
+-- Dumping data for table `users`
 --
 
 INSERT INTO `users` (`id_user`, `username`, `password`, `nama_lengkap`, `role`) VALUES
@@ -1189,133 +1291,163 @@ INSERT INTO `users` (`id_user`, `username`, `password`, `nama_lengkap`, `role`) 
 --
 
 --
--- Indeks untuk tabel `dataset_training`
+-- Indexes for table `dataset_training`
 --
 ALTER TABLE `dataset_training`
   ADD PRIMARY KEY (`id_data`);
 
 --
--- Indeks untuk tabel `evaluasi_siswa`
+-- Indexes for table `evaluasi_siswa`
 --
 ALTER TABLE `evaluasi_siswa`
   ADD PRIMARY KEY (`id_evaluasi`);
 
 --
--- Indeks untuk tabel `laporan_prilaku`
+-- Indexes for table `laporan_prilaku`
 --
 ALTER TABLE `laporan_prilaku`
   ADD PRIMARY KEY (`id_laporan`),
   ADD KEY `id_siswa` (`id_siswa`),
-  ADD KEY `id_user` (`id_user`);
+  ADD KEY `id_user` (`id_user`),
+  ADD KEY `idx_laporan_periode` (`id_periode`);
 
 --
--- Indeks untuk tabel `master_poin`
+-- Indexes for table `master_poin`
 --
 ALTER TABLE `master_poin`
   ADD PRIMARY KEY (`id_aturan`);
 
 --
--- Indeks untuk tabel `remisi`
+-- Indexes for table `periode_akademik`
+--
+ALTER TABLE `periode_akademik`
+  ADD PRIMARY KEY (`id_periode`),
+  ADD UNIQUE KEY `uniq_tahun_ajaran` (`tahun_ajaran`);
+
+--
+-- Indexes for table `rekap_poin_periode`
+--
+ALTER TABLE `rekap_poin_periode`
+  ADD PRIMARY KEY (`id_rekap`),
+  ADD UNIQUE KEY `uniq_rekap_periode_siswa` (`id_periode`,`id_siswa`),
+  ADD KEY `idx_rekap_periode` (`id_periode`);
+
+--
+-- Indexes for table `remisi`
 --
 ALTER TABLE `remisi`
   ADD PRIMARY KEY (`id_remisi`),
   ADD KEY `id_siswa` (`id_siswa`,`id_user`),
-  ADD KEY `id_user` (`id_user`);
+  ADD KEY `id_user` (`id_user`),
+  ADD KEY `idx_remisi_periode` (`id_periode`);
 
 --
--- Indeks untuk tabel `siswa`
+-- Indexes for table `siswa`
 --
 ALTER TABLE `siswa`
   ADD PRIMARY KEY (`id_siswa`),
   ADD UNIQUE KEY `nis` (`nis`);
 
 --
--- Indeks untuk tabel `tindaklanjut`
+-- Indexes for table `tindaklanjut`
 --
 ALTER TABLE `tindaklanjut`
   ADD PRIMARY KEY (`id_tindak`),
   ADD KEY `id_siswa` (`id_siswa`),
-  ADD KEY `id_users` (`id_users`);
+  ADD KEY `id_users` (`id_users`),
+  ADD KEY `idx_tindaklanjut_periode` (`id_periode`);
 
 --
--- Indeks untuk tabel `users`
+-- Indexes for table `users`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id_user`),
   ADD UNIQUE KEY `username` (`username`);
 
 --
--- AUTO_INCREMENT untuk tabel yang dibuang
+-- AUTO_INCREMENT for dumped tables
 --
 
 --
--- AUTO_INCREMENT untuk tabel `dataset_training`
+-- AUTO_INCREMENT for table `dataset_training`
 --
 ALTER TABLE `dataset_training`
   MODIFY `id_data` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=738;
 
 --
--- AUTO_INCREMENT untuk tabel `evaluasi_siswa`
+-- AUTO_INCREMENT for table `evaluasi_siswa`
 --
 ALTER TABLE `evaluasi_siswa`
   MODIFY `id_evaluasi` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
--- AUTO_INCREMENT untuk tabel `laporan_prilaku`
+-- AUTO_INCREMENT for table `laporan_prilaku`
 --
 ALTER TABLE `laporan_prilaku`
-  MODIFY `id_laporan` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=199;
+  MODIFY `id_laporan` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=202;
 
 --
--- AUTO_INCREMENT untuk tabel `master_poin`
+-- AUTO_INCREMENT for table `master_poin`
 --
 ALTER TABLE `master_poin`
   MODIFY `id_aturan` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=292;
 
 --
--- AUTO_INCREMENT untuk tabel `remisi`
+-- AUTO_INCREMENT for table `periode_akademik`
+--
+ALTER TABLE `periode_akademik`
+  MODIFY `id_periode` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT for table `rekap_poin_periode`
+--
+ALTER TABLE `rekap_poin_periode`
+  MODIFY `id_rekap` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=64;
+
+--
+-- AUTO_INCREMENT for table `remisi`
 --
 ALTER TABLE `remisi`
   MODIFY `id_remisi` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
--- AUTO_INCREMENT untuk tabel `siswa`
+-- AUTO_INCREMENT for table `siswa`
 --
 ALTER TABLE `siswa`
   MODIFY `id_siswa` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=101;
 
 --
--- AUTO_INCREMENT untuk tabel `tindaklanjut`
+-- AUTO_INCREMENT for table `tindaklanjut`
 --
 ALTER TABLE `tindaklanjut`
   MODIFY `id_tindak` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
--- AUTO_INCREMENT untuk tabel `users`
+-- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
   MODIFY `id_user` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
--- Ketidakleluasaan untuk tabel pelimpahan (Dumped Tables)
+-- Constraints for dumped tables
 --
 
 --
--- Ketidakleluasaan untuk tabel `laporan_prilaku`
+-- Constraints for table `laporan_prilaku`
 --
 ALTER TABLE `laporan_prilaku`
   ADD CONSTRAINT `laporan_prilaku_ibfk_1` FOREIGN KEY (`id_siswa`) REFERENCES `siswa` (`id_siswa`),
   ADD CONSTRAINT `laporan_prilaku_ibfk_2` FOREIGN KEY (`id_user`) REFERENCES `users` (`id_user`);
 
 --
--- Ketidakleluasaan untuk tabel `remisi`
+-- Constraints for table `remisi`
 --
 ALTER TABLE `remisi`
   ADD CONSTRAINT `remisi_ibfk_1` FOREIGN KEY (`id_user`) REFERENCES `users` (`id_user`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `remisi_ibfk_2` FOREIGN KEY (`id_siswa`) REFERENCES `siswa` (`id_siswa`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Ketidakleluasaan untuk tabel `tindaklanjut`
+-- Constraints for table `tindaklanjut`
 --
 ALTER TABLE `tindaklanjut`
   ADD CONSTRAINT `tindaklanjut_ibfk_1` FOREIGN KEY (`id_siswa`) REFERENCES `siswa` (`id_siswa`) ON DELETE CASCADE ON UPDATE CASCADE,
