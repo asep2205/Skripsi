@@ -109,10 +109,14 @@ if (isset($_POST['narasi_laporan']) && isset($_POST['id_siswa'])) {
         2 => ["pipe", "w"]
     ];
 
-    // Tentukan interpreter Python yang tersedia. macOS modern menyediakan
-    // `python3` (bukan `python`) dan PATH Apache sering kali sangat terbatas.
+    // Tentukan interpreter Python yang tersedia. PATH Apache sering kali
+    // terbatas, terutama pada instalasi XAMPP di Windows.
     $python_command = null;
-    foreach (['/usr/local/bin/python3', '/opt/homebrew/bin/python3', 'python3', 'python'] as $candidate) {
+    $is_windows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+    $candidates = $is_windows
+        ? ['python', 'py']
+        : ['/usr/local/bin/python3', '/opt/homebrew/bin/python3', 'python3', 'python'];
+    foreach ($candidates as $candidate) {
         if ($candidate === 'python3' || $candidate === 'python' || is_executable($candidate)) {
             $python_command = $candidate;
             break;
@@ -127,7 +131,9 @@ if (isset($_POST['narasi_laporan']) && isset($_POST['id_siswa'])) {
                 if (strpos($folder, 'Python') === 0) {
                     $exe_path = $local_app_data_python . "\\" . $folder . "\\python.exe";
                     if (file_exists($exe_path)) {
-                        $python_command = '"' . $exe_path . '"';
+                        // Simpan path asli tanpa quote. Quote akan ditangani
+                        // oleh proc_open; quote ganda membuat CMD Windows gagal.
+                        $python_command = $exe_path;
                         break;
                     }
                 }
@@ -136,10 +142,40 @@ if (isset($_POST['narasi_laporan']) && isset($_POST['id_siswa'])) {
     }
 
     $script_python = __DIR__ . DIRECTORY_SEPARATOR . 'nlp_engine.py';
-    $process = proc_open(escapeshellarg($python_command) . ' ' . escapeshellarg($script_python), $descriptorspec, $pipes);
+    if ($python_command === null) {
+        echo "Python tidak ditemukan. Instal Python lalu pastikan python.exe tersedia di PATH atau di folder instalasi Python pengguna.";
+        exit();
+    }
+
+    // Array command (PHP >= 7.4) melewati shell, sehingga path Windows yang
+    // memiliki spasi tidak perlu di-quote secara manual.
+    $command = PHP_VERSION_ID >= 70400
+        ? [$python_command, $script_python]
+        : escapeshellarg($python_command) . ' ' . escapeshellarg($script_python);
+    $process = proc_open($command, $descriptorspec, $pipes);
 
     if (is_resource($process)) {
-        fwrite($pipes[0], json_encode($payload));
+        $payload_json = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
+        if ($payload_json === false) {
+            fclose($pipes[0]);
+            fclose($pipes[1]);
+            fclose($pipes[2]);
+            proc_close($process);
+            echo "Gagal menyiapkan data laporan untuk Python: " . json_last_error_msg();
+            exit();
+        }
+
+        // Jika Python gagal start, stdin-nya sudah tertutup. Jangan tampilkan
+        // Notice Broken pipe; stderr Python di bawah akan menjadi pesan error.
+        $bytes_written = 0;
+        $payload_length = strlen($payload_json);
+        while ($bytes_written < $payload_length) {
+            $written = @fwrite($pipes[0], substr($payload_json, $bytes_written));
+            if ($written === false || $written === 0) {
+                break;
+            }
+            $bytes_written += $written;
+        }
         fclose($pipes[0]);
 
         $result_json = stream_get_contents($pipes[1]);
@@ -148,18 +184,22 @@ if (isset($_POST['narasi_laporan']) && isset($_POST['id_siswa'])) {
         $error_output = stream_get_contents($pipes[2]);
         fclose($pipes[2]);
 
-        proc_close($process);
+        $exit_code = proc_close($process);
 
         $hasil_nlp = json_decode($result_json, true);
 
-        if ($hasil_nlp === null || isset($hasil_nlp['error'])) {
+        if ($bytes_written !== $payload_length || $hasil_nlp === null || isset($hasil_nlp['error'])) {
             // Hapus foto yang sudah terlanjur di-upload karena proses NLP gagal
             if (!empty($foto_final) && file_exists($foto_final)) {
                 @unlink($foto_final);
             }
             echo "<h3>Oops, Ada masalah di Python:</h3>";
-            echo "<b>Pesan Error Python:</b> <pre>" . ($hasil_nlp['error'] ?? $error_output) . "</pre>";
-            echo "<br><i>Saran: Jika error 'Sastrawi tidak ditemukan', buka CMD biasa lalu ketik: <b>pip install Sastrawi</b></i>";
+            $python_error = $hasil_nlp['error'] ?? trim($error_output);
+            if ($python_error === '') {
+                $python_error = "Python berhenti sebelum mengirim hasil (kode proses: $exit_code).";
+            }
+            echo "<b>Pesan Error Python:</b> <pre>" . htmlspecialchars($python_error, ENT_QUOTES, 'UTF-8') . "</pre>";
+            echo "<br><i>Pastikan modul dipasang pada interpreter yang sama: <b>\"$python_command\" -m pip install Sastrawi</b></i>";
             exit();
         }
 
