@@ -6,6 +6,7 @@ if (($_SESSION['status'] ?? '') !== 'login' || !in_array($_SESSION['role'] ?? ''
 }
 
 include 'koneksi.php';
+include 'periode_helper.php';
 
 $id_laporan = (int)($_POST['id_laporan'] ?? 0);
 $aksi = $_POST['aksi'] ?? '';
@@ -23,7 +24,7 @@ $catatan_db = mysqli_real_escape_string($koneksi, $catatan);
 
 mysqli_begin_transaction($koneksi);
 try {
-    $q_laporan = mysqli_query($koneksi, "SELECT id_siswa, label_prediksi, poin_didapat, status_verifikasi FROM laporan_prilaku WHERE id_laporan = $id_laporan FOR UPDATE");
+    $q_laporan = mysqli_query($koneksi, "SELECT id_siswa, id_periode, label_prediksi, poin_didapat, status_verifikasi FROM laporan_prilaku WHERE id_laporan = $id_laporan FOR UPDATE");
     $laporan = $q_laporan ? mysqli_fetch_assoc($q_laporan) : null;
 
     if (!$laporan) {
@@ -42,7 +43,9 @@ try {
         throw new Exception('Status laporan gagal diperbarui.');
     }
 
-    if ($aksi === 'disetujui' && (int)$laporan['poin_didapat'] > 0) {
+    // Poin pada siswa adalah saldo periode aktif. Persetujuan laporan arsip
+    // tetap dicatat, namun tidak mengubah saldo tahun ajaran yang baru.
+    if ($aksi === 'disetujui' && (int)$laporan['poin_didapat'] > 0 && (int)$laporan['id_periode'] === id_periode_aktif($koneksi)) {
         $kolom_poin = $laporan['label_prediksi'] === 'Reward' ? 'total_poin_reward' : 'total_poin_punishment';
         $poin = (int)$laporan['poin_didapat'];
         $id_siswa = (int)$laporan['id_siswa'];

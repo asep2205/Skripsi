@@ -12,6 +12,11 @@ if($_SESSION['status'] != "login"){
 */
 
 include "koneksi.php";
+include 'periode_helper.php';
+
+$periodeAktif = id_periode_aktif($koneksi);
+$id_periode_filter = isset($_GET['periode']) ? (int)$_GET['periode'] : $periodeAktif;
+$periodeList = mysqli_query($koneksi, "SELECT id_periode, tahun_ajaran, status FROM periode_akademik ORDER BY tanggal_mulai DESC");
 
 // Menangkap filter pencarian dan kategori untuk tabel
 $search = isset($_GET['search']) ? mysqli_real_escape_string($koneksi, $_GET['search']) : '';
@@ -20,10 +25,12 @@ $filter_kategori = isset($_GET['kategori']) ? mysqli_real_escape_string($koneksi
 /**
  * QUERY UTAMA TABEL (DIBATASI HANYA 5 DATA TERBARU)
  */
-$query_str = "SELECT lp.*, s.nama_siswa, s.nis, s.kelas 
-              FROM laporan_prilaku lp 
-              LEFT JOIN siswa s ON lp.id_siswa = s.id_siswa 
+$query_str = "SELECT lp.*, s.nama_siswa, s.nis, s.kelas
+              FROM laporan_prilaku lp
+              LEFT JOIN siswa s ON lp.id_siswa = s.id_siswa
               WHERE 1=1";
+
+if ($id_periode_filter > 0) $query_str .= " AND lp.id_periode = $id_periode_filter";
 
 if (!empty($search)) {
     $query_str .= " AND (lp.teks_laporan LIKE '%$search%' 
@@ -44,10 +51,12 @@ $sql = mysqli_query($koneksi, $query_str);
 // =========================================================================
 // [BARU] QUERY AMBIL DATA REMISI (Maks 5 Data Terbaru)
 // =========================================================================
-$query_remisi_str = "SELECT r.*, s.nama_siswa, s.nis, s.kelas 
+$query_remisi_str = "SELECT r.*, s.nama_siswa, s.nis, s.kelas
                      FROM remisi r
-                     LEFT JOIN siswa s ON r.id_siswa = s.id_siswa 
+                     LEFT JOIN siswa s ON r.id_siswa = s.id_siswa
                      WHERE 1=1";
+
+if ($id_periode_filter > 0) $query_remisi_str .= " AND r.id_periode = $id_periode_filter";
 
 if (!empty($search)) {
     $query_remisi_str .= " AND (r.keterangan LIKE '%$search%' 
@@ -64,10 +73,12 @@ $sql_remisi = mysqli_query($koneksi, $query_remisi_str);
 // "terbaru" di sini diurutkan berdasarkan id_tindak DESC (id auto increment
 // terbesar = data yang terakhir dimasukkan).
 // =========================================================================
-$query_tindaklanjut_str = "SELECT tl.*, s.nama_siswa, s.nis, s.kelas 
+$query_tindaklanjut_str = "SELECT tl.*, s.nama_siswa, s.nis, s.kelas
                            FROM tindaklanjut tl
-                           LEFT JOIN siswa s ON tl.id_siswa = s.id_siswa 
+                           LEFT JOIN siswa s ON tl.id_siswa = s.id_siswa
                            WHERE 1=1";
+
+if ($id_periode_filter > 0) $query_tindaklanjut_str .= " AND tl.id_periode = $id_periode_filter";
 
 if (!empty($search)) {
     $query_tindaklanjut_str .= " AND (tl.tindaklanjut LIKE '%$search%' 
@@ -86,23 +97,32 @@ $sql_tindaklanjut = mysqli_query($koneksi, $query_tindaklanjut_str);
 // Diurutkan berdasarkan total poin terbesar -> terkecil agar mudah dibandingkan
 // =========================================================================
 $rank_reward = [];
-$q_rank_reward = mysqli_query($koneksi, "SELECT nama_siswa, kelas, total_poin_reward 
-                                          FROM siswa 
-                                          WHERE total_poin_reward > 0 
-                                          ORDER BY total_poin_reward DESC, nama_siswa ASC 
-                                          LIMIT 10");
+$rank_punish = [];
+$periodeDipilih = null;
+if ($id_periode_filter > 0) {
+    $q_periode = mysqli_query($koneksi, "SELECT status FROM periode_akademik WHERE id_periode = $id_periode_filter");
+    $periodeDipilih = $q_periode ? mysqli_fetch_assoc($q_periode) : null;
+}
+
+if ($periodeDipilih && $periodeDipilih['status'] === 'arsip') {
+    // Untuk arsip, ambil snapshot. COALESCE adalah fallback untuk periode lama
+    // yang belum memiliki snapshot: poin dihitung kembali dari laporan disetujui.
+    $sql_rank_arsip = "SELECT s.nama_siswa, s.kelas,
+        COALESCE(rk.total_poin_reward, (SELECT COALESCE(SUM(lp.poin_didapat), 0) FROM laporan_prilaku lp WHERE lp.id_siswa = s.id_siswa AND lp.id_periode = $id_periode_filter AND lp.status_verifikasi = 'disetujui' AND lp.label_prediksi = 'Reward')) AS total_poin_reward,
+        COALESCE(rk.total_poin_punishment, (SELECT COALESCE(SUM(lp.poin_didapat), 0) FROM laporan_prilaku lp WHERE lp.id_siswa = s.id_siswa AND lp.id_periode = $id_periode_filter AND lp.status_verifikasi = 'disetujui' AND lp.label_prediksi = 'Punishment')) AS total_poin_punishment
+        FROM siswa s LEFT JOIN rekap_poin_periode rk ON rk.id_siswa = s.id_siswa AND rk.id_periode = $id_periode_filter";
+    $q_rank_reward = mysqli_query($koneksi, "SELECT * FROM ($sql_rank_arsip) AS rekap WHERE total_poin_reward > 0 ORDER BY total_poin_reward DESC, nama_siswa ASC LIMIT 10");
+    $q_rank_punish = mysqli_query($koneksi, "SELECT * FROM ($sql_rank_arsip) AS rekap WHERE total_poin_punishment > 0 ORDER BY total_poin_punishment DESC, nama_siswa ASC LIMIT 10");
+} else {
+    $q_rank_reward = mysqli_query($koneksi, "SELECT nama_siswa, kelas, total_poin_reward FROM siswa WHERE total_poin_reward > 0 ORDER BY total_poin_reward DESC, nama_siswa ASC LIMIT 10");
+    $q_rank_punish = mysqli_query($koneksi, "SELECT nama_siswa, kelas, total_poin_punishment FROM siswa WHERE total_poin_punishment > 0 ORDER BY total_poin_punishment DESC, nama_siswa ASC LIMIT 10");
+}
 if ($q_rank_reward) {
     while ($rr = mysqli_fetch_assoc($q_rank_reward)) {
         $rank_reward[] = $rr;
     }
 }
 
-$rank_punish = [];
-$q_rank_punish = mysqli_query($koneksi, "SELECT nama_siswa, kelas, total_poin_punishment 
-                                          FROM siswa 
-                                          WHERE total_poin_punishment > 0 
-                                          ORDER BY total_poin_punishment DESC, nama_siswa ASC 
-                                          LIMIT 10");
 if ($q_rank_punish) {
     while ($rp = mysqli_fetch_assoc($q_rank_punish)) {
         $rank_punish[] = $rp;
@@ -129,7 +149,7 @@ $q_hari = "SELECT
                 SUM(CASE WHEN LOWER(lp.label_prediksi) = 'punishment' THEN 1 ELSE 0 END) AS total_punishment
             FROM laporan_prilaku lp
             LEFT JOIN siswa s ON lp.id_siswa = s.id_siswa
-            WHERE lp.status_verifikasi = 'disetujui'
+            WHERE lp.status_verifikasi = 'disetujui'" . ($id_periode_filter > 0 ? " AND lp.id_periode = $id_periode_filter" : "") . "
             GROUP BY DATE(lp.tgl_input), s.kelas
             ORDER BY lp.tgl_input ASC";
 $res_hari = mysqli_query($koneksi, $q_hari);
@@ -147,7 +167,7 @@ $q_minggu = "SELECT
                 SUM(CASE WHEN LOWER(lp.label_prediksi) = 'punishment' THEN 1 ELSE 0 END) AS total_punishment
             FROM laporan_prilaku lp
             LEFT JOIN siswa s ON lp.id_siswa = s.id_siswa
-            WHERE lp.status_verifikasi = 'disetujui'
+            WHERE lp.status_verifikasi = 'disetujui'" . ($id_periode_filter > 0 ? " AND lp.id_periode = $id_periode_filter" : "") . "
             GROUP BY YEARWEEK(lp.tgl_input, 1), s.kelas
             ORDER BY lp.tgl_input ASC";
 $res_minggu = mysqli_query($koneksi, $q_minggu);
@@ -165,7 +185,7 @@ $q_bulan = "SELECT
                 SUM(CASE WHEN LOWER(lp.label_prediksi) = 'punishment' THEN 1 ELSE 0 END) AS total_punishment
             FROM laporan_prilaku lp
             LEFT JOIN siswa s ON lp.id_siswa = s.id_siswa
-            WHERE lp.status_verifikasi = 'disetujui'
+            WHERE lp.status_verifikasi = 'disetujui'" . ($id_periode_filter > 0 ? " AND lp.id_periode = $id_periode_filter" : "") . "
             GROUP BY DATE_FORMAT(lp.tgl_input, '%Y-%m'), s.kelas
             ORDER BY lp.tgl_input ASC";
 $res_bulan = mysqli_query($koneksi, $q_bulan);
@@ -183,7 +203,7 @@ $q_semester = "SELECT
                     SUM(CASE WHEN LOWER(lp.label_prediksi) = 'punishment' THEN 1 ELSE 0 END) AS total_punishment
                 FROM laporan_prilaku lp
                 LEFT JOIN siswa s ON lp.id_siswa = s.id_siswa
-                WHERE lp.status_verifikasi = 'disetujui'
+                WHERE lp.status_verifikasi = 'disetujui'" . ($id_periode_filter > 0 ? " AND lp.id_periode = $id_periode_filter" : "") . "
                 GROUP BY CASE WHEN MONTH(lp.tgl_input) BETWEEN 7 AND 12 THEN 'Ganjil' ELSE 'Genap' END, YEAR(lp.tgl_input), s.kelas
                 ORDER BY lp.tgl_input ASC";
 $res_semester = mysqli_query($koneksi, $q_semester);
@@ -201,7 +221,7 @@ $q_tahun = "SELECT
                 SUM(CASE WHEN LOWER(lp.label_prediksi) = 'punishment' THEN 1 ELSE 0 END) AS total_punishment
             FROM laporan_prilaku lp
             LEFT JOIN siswa s ON lp.id_siswa = s.id_siswa
-            WHERE lp.status_verifikasi = 'disetujui'
+            WHERE lp.status_verifikasi = 'disetujui'" . ($id_periode_filter > 0 ? " AND lp.id_periode = $id_periode_filter" : "") . "
             GROUP BY YEAR(lp.tgl_input), s.kelas
             ORDER BY periode ASC";
 $res_tahun = mysqli_query($koneksi, $q_tahun);
@@ -278,6 +298,10 @@ while($r = mysqli_fetch_assoc($res_tahun)) {
         <i class="bi bi-info-circle-fill me-3 fs-5"></i>
         <span style="line-height: 1.4;">Menampilkan log klasifikasi teks laporan perilaku siswa menggunakan metode Naive Bayes.</span>
     </div>
+
+    <form method="get" class="card border-0 shadow-sm p-3 mb-4" style="border-radius: 16px;">
+        <div class="row align-items-end g-2"><div class="col-md-8"><label class="form-label small fw-bold mb-1">Tampilkan riwayat tahun ajaran</label><select name="periode" class="form-select form-select-sm"><option value="0">Semua tahun ajaran</option><?php if ($periodeList): while ($periode = mysqli_fetch_assoc($periodeList)): ?><option value="<?= (int)$periode['id_periode'] ?>" <?= $id_periode_filter === (int)$periode['id_periode'] ? 'selected' : '' ?>><?= htmlspecialchars($periode['tahun_ajaran'] . ($periode['status'] === 'aktif' ? ' (Aktif)' : '')) ?></option><?php endwhile; endif; ?></select></div><div class="col-md-4"><button class="btn btn-primary btn-sm w-100"><i class="bi bi-funnel me-1"></i>Terapkan</button></div></div>
+    </form>
 
     <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: 20px;">
         <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-3 mb-4">

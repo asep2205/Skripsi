@@ -6,8 +6,15 @@ if($_SESSION['status'] != "login"){
 }
 
 include 'koneksi.php';
+include 'periode_helper.php';
 
 if (isset($_POST['narasi_laporan']) && isset($_POST['id_siswa'])) {
+    // Periode dicatat sekarang supaya laporan pending tidak ikut pindah periode.
+    $id_periode = id_periode_aktif($koneksi);
+    if ($id_periode <= 0) {
+        header("location:input_laporan?pesan=periode_belum_aktif");
+        exit();
+    }
     $narasi_laporan = trim($_POST['narasi_laporan']);
     $id_siswa_input = mysqli_real_escape_string($koneksi, $_POST['id_siswa']);
 
@@ -197,8 +204,8 @@ if (isset($_POST['narasi_laporan']) && isset($_POST['id_siswa'])) {
 
         // Simpan laporan lengkap dengan foto bukti ke tabel laporan_prilaku
         $query_laporan = "INSERT INTO laporan_prilaku
-            (id_siswa, id_user, teks_laporan, label_prediksi, kecocokan_kata, poin_didapat, akurasi_map, foto, status_verifikasi)
-            VALUES ('$id_siswa_input', '$id_user', '$teks_laporan', '$label_prediksi', '$kecocokan_kata', '$poin_didapat', '$akurasi_map', '$foto_db', 'pending')";
+            (id_siswa, id_user, id_periode, teks_laporan, label_prediksi, kecocokan_kata, poin_didapat, akurasi_map, foto, status_verifikasi)
+            VALUES ('$id_siswa_input', '$id_user', $id_periode, '$teks_laporan', '$label_prediksi', '$kecocokan_kata', '$poin_didapat', '$akurasi_map', '$foto_db', 'pending')";
 
         if (!mysqli_query($koneksi, $query_laporan)) {
             if (!empty($foto_final) && file_exists($foto_final)) {

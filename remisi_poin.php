@@ -6,15 +6,22 @@ if($_SESSION['status'] != "login"){
 }
 
 include 'koneksi.php';
+include 'periode_helper.php';
 
 // Ambil ID User yang sedang login dari session untuk direkam ke tabel remisi
 $id_user_login = isset($_SESSION['id_user']) ? (int)$_SESSION['id_user'] : 1; 
 
 $pesan_remisi = '';
 $status_remisi = '';
+$id_periode_aktif = id_periode_aktif($koneksi);
+
+if ((isset($_GET['proses_konfirmasi']) || isset($_POST['proses_pengajuan'])) && $id_periode_aktif <= 0) {
+    $status_remisi = 'gagal';
+    $pesan_remisi = 'Belum ada periode tahun ajaran yang aktif.';
+}
 
 // --- PROSES ALUR 1: KONFIRMASI (LANGSUNG POTONG OTOMATIS BERDASARKAN SELISIH REWARD) ---
-if (isset($_GET['proses_konfirmasi'])) {
+if (isset($_GET['proses_konfirmasi']) && $id_periode_aktif > 0) {
     $id_siswa = (int)$_GET['proses_konfirmasi'];
 
     // 1. Ambil data poin siswa saat ini
@@ -50,8 +57,8 @@ if (isset($_GET['proses_konfirmasi'])) {
 
                 // Catat transaksi Riwayat ke Tabel Remisi
                 $keterangan_otomatis = "Sistem Konfirmasi Otomatis: Sinkronisasi pemotongan " . $poin_remisi_tercatat . " poin sanksi menggunakan poin reward.";
-                $query_insert_remisi = "INSERT INTO remisi (id_siswa, id_user, poin_remisi, pengajuan, keterangan, tgl_input) 
-                                        VALUES ($id_siswa, $id_user_login, $poin_remisi_tercatat, 'konfirmasi', '$keterangan_otomatis', NOW())";
+                $query_insert_remisi = "INSERT INTO remisi (id_siswa, id_user, id_periode, poin_remisi, pengajuan, keterangan, tgl_input)
+                                        VALUES ($id_siswa, $id_user_login, $id_periode_aktif, $poin_remisi_tercatat, 'konfirmasi', '$keterangan_otomatis', NOW())";
                 mysqli_query($koneksi, $query_insert_remisi);
 
                 mysqli_commit($koneksi);
@@ -73,7 +80,7 @@ if (isset($_GET['proses_konfirmasi'])) {
 }
 
 // --- PROSES ALUR 2: PENGAJUAN FORM (PERUBAHAN: MEMOTONG PUNISHMENT TANPA MENGURANGI REWARD) ---
-if (isset($_POST['proses_pengajuan'])) {
+if (isset($_POST['proses_pengajuan']) && $id_periode_aktif > 0) {
     $id_siswa = (int)$_POST['id_siswa'];
     $poin_ajukan = (int)$_POST['poin_remisi'];
     $keterangan_reward = mysqli_real_escape_string($koneksi, $_POST['keterangan']);
@@ -131,8 +138,8 @@ if (isset($_POST['proses_pengajuan'])) {
 
                 // Simpan rekaman histori log ke tabel remisi dengan status 'pengajuan' beserta foto buktinya
                 $bukti_db = mysqli_real_escape_string($koneksi, $bukti_final);
-                $query_ajukan = "INSERT INTO remisi (id_siswa, id_user, poin_remisi, pengajuan, keterangan, bukti, tgl_input) 
-                                 VALUES ($id_siswa, $id_user_login, $poin_ajukan, 'pengajuan', '$keterangan_reward', '$bukti_db', NOW())";
+                $query_ajukan = "INSERT INTO remisi (id_siswa, id_user, id_periode, poin_remisi, pengajuan, keterangan, bukti, tgl_input)
+                                 VALUES ($id_siswa, $id_user_login, $id_periode_aktif, $poin_ajukan, 'pengajuan', '$keterangan_reward', '$bukti_db', NOW())";
                 mysqli_query($koneksi, $query_ajukan);
 
                 mysqli_commit($koneksi);

@@ -222,6 +222,14 @@ $role_user = $_SESSION['role']; // Mengambil role: Admin, Guru, BK, atau Kepsek
         <div class="col-6 col-sm-6 col-md-4 col-lg-3">
             <div class="card premium-menu-card h-100 p-3 text-center">
                 <div class="card-body p-0 d-flex flex-column align-items-center">
+                    <div class="icon-premium-box bg-info-subtle text-info shadow-inner"><i class="bi bi-calendar-range"></i></div>
+                    <h6 class="menu-title-premium">Periode Akademik</h6><a href="periode_akademik" class="stretched-link"></a>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-sm-6 col-md-4 col-lg-3">
+            <div class="card premium-menu-card h-100 p-3 text-center">
+                <div class="card-body p-0 d-flex flex-column align-items-center">
                     <div class="icon-premium-box bg-success-subtle text-success shadow-inner">
                         <i class="bi bi-mortarboard"></i>
                     </div>

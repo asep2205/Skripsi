@@ -6,6 +6,7 @@ if($_SESSION['status'] != "login"){
 }
 
 include 'koneksi.php';
+include 'periode_helper.php';
 
 // Ambil flash message hasil simpan tindak lanjut (pola Post-Redirect-Get)
 $pesan_tindak = $_SESSION['pesan_tindak'] ?? '';
@@ -18,6 +19,7 @@ unset($_SESSION['pesan_tindak'], $_SESSION['status_tindak']);
 // Disimpan ke tabel `tindaklanjut`
 // =========================================================================
 if (isset($_POST['proses_tindaklanjut'])) {
+    $id_periode_aktif = id_periode_aktif($koneksi);
     $id_siswa               = (int)($_POST['id_siswa'] ?? 0);
     $kategori_rp            = trim($_POST['kategori_rp'] ?? '');
     $deskripsi_tindakan     = trim($_POST['deskripsi_tindakan'] ?? '');
@@ -25,7 +27,10 @@ if (isset($_POST['proses_tindaklanjut'])) {
     $poin_kurang            = (int)($_POST['poin_kurang'] ?? 0);
     $id_users               = (int)($_SESSION['id_user'] ?? 0);
 
-    if ($id_siswa <= 0 || $kategori_rp === '' || $deskripsi_tindakan === '' || $deskripsi_tindaklanjut === '' || $poin_kurang <= 0) {
+    if ($id_periode_aktif <= 0) {
+        $_SESSION['status_tindak'] = 'gagal';
+        $_SESSION['pesan_tindak']  = 'Belum ada periode tahun ajaran yang aktif.';
+    } elseif ($id_siswa <= 0 || $kategori_rp === '' || $deskripsi_tindakan === '' || $deskripsi_tindaklanjut === '' || $poin_kurang <= 0) {
         $_SESSION['status_tindak'] = 'gagal';
         $_SESSION['pesan_tindak']  = "Semua kolom (termasuk poin yang dikurangi) wajib diisi dengan benar.";
     } else {
@@ -112,8 +117,8 @@ if (isset($_POST['proses_tindaklanjut'])) {
                         // (siapa yang mencatat tindak lanjut ini, diambil dari sesi login)
                         $id_users_db = $id_users > 0 ? $id_users : "NULL"; // kolom id_users boleh NULL
 
-                        $query_insert_tindak = "INSERT INTO tindaklanjut (id_siswa, id_users, ketegoriRP, tindaklanjut, poin, foto) 
-                                                VALUES ($id_siswa, $id_users_db, '$kategori_db', '$isi_db', '$poin_db', '$foto_db')";
+                        $query_insert_tindak = "INSERT INTO tindaklanjut (id_siswa, id_users, id_periode, ketegoriRP, tindaklanjut, poin, foto)
+                                                VALUES ($id_siswa, $id_users_db, $id_periode_aktif, '$kategori_db', '$isi_db', '$poin_db', '$foto_db')";
 
                         if (!mysqli_query($koneksi, $query_insert_tindak)) {
                             throw new Exception("Gagal insert tindak lanjut: " . mysqli_error($koneksi));
