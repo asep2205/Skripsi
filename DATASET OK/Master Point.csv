@@ -1,0 +1,153 @@
+1,Punishment,siswa datang terlambat karena kesiangan,10
+2,Punishment,siswa telat masuk sekolah dan dihukum,10
+3,Punishment,siswa terlambat mengikuti upacara bendera,10
+4,Punishment,siswa terlambat saat ada razia di pintu gerbang,10
+5,Punishment,siswa melompat pagar sekolah karena terlambat,10
+6,Punishment,siswa telat mengumpulkan tugas sekolah,10
+7,Punishment,siswa nongkrong di warung saat jam pelajaran dan terlambat masuk,10
+8,Punishment,siswa telat masuk sekolah tanpa keterangan atau alpha,10
+9,Punishment,siswa terlambat mengikuti ujian sekolah,10
+10,Punishment,siswa dihukum di lapangan sekolah karena telat,10
+11,Punishment,siswa membuang sampah sembarangan di lingkungan sekolah,10
+12,Punishment,siswa mencoret meja belajar menggunakan spidol,10
+13,Punishment,siswa mengotori dinding toilet sekolah,10
+14,Punishment,siswa meninggalkan lingkungan dalam kondisi kotor dan sampah berserakan,10
+15,Punishment,siswa menyumbat wastafel sekolah dengan sampah,10
+16,Punishment,siswa menendang pintu fasilitas sekolah sampai rusak dan patah,10
+17,Punishment,siswa mencoret dinding sekolah dengan cat piloks,10
+18,Punishment,siswa merusak saklar lampu kelas,10
+19,Punishment,siswa mematahkan penggaris inventaris kelas,10
+20,Punishment,siswa melempari kaca jendela hingga retak,10
+21,Punishment,siswa merobek buku perpustakaan sekolah,10
+22,Punishment,siswa merusak jaring net olahraga,10
+23,Punishment,siswa mencopot tanaman dan merusak pot bunga sekolah,10
+24,Punishment,siswa menggores mobil guru menggunakan paku,10
+25,Punishment,siswa merusak kran air hingga patah,10
+26,Punishment,siswa membawa memakai penjual atau mengedar alkohol judi online narkoba dan psikotropika,100
+27,Punishment,siswa merampas atau mencuri milik orang lain baik di sekolah maupun di luar sekolah,100
+28,Punishment,siswa berkelahi melakukan penganiayaan atau membuat keonaran yang mengganggu ketertiban,100
+29,Punishment,siswa hamil menghamili melakukan pemerkosaan atau menikah selama masa sekolah,100
+30,Punishment,siswa ditato ditindik atau ditendok oleh diri sendiri maupun orang lain,100
+31,Punishment,siswa memalsukan surat atau tanda tangan pejabat sekolah,50
+32,Punishment,siswa menghina memfitnah atau merendahkan kepala sekolah guru tu dan karyawan sekolah,50
+33,Punishment,siswa membawa senjata tajam senjata api atau alat lain yang membahayakan,50
+34,Punishment,siswa membawa bacaan gambar vcd hp atau media yang bersifat pornografi,50
+35,Punishment,siswa merusak dan menghilangkan barang milik sekolah atau milik orang lain,50
+36,Punishment,siswa merusak lingkungan sekolah atau lingkungan umum,50
+37,Punishment,siswa melakukan pelecehan seksual,50
+38,Punishment,siswa menyalahgunakan keuangan sekolah,30
+39,Punishment,siswa merokok di lingkungan sekolah atau di luar dengan memakai seragam atribut sekolah,30
+40,Punishment,siswa kabur atau meninggalkan kelas sekolah tanpa izin guru pengajar,30
+41,Punishment,siswa memalsukan surat atau tanda tangan orang tua wali,30
+42,Punishment,siswa tidak masuk sekolah tanpa keterangan atau alpha tiga hari dalam sepekan,30
+43,Punishment,siswa tidak masuk sekolah tanpa keterangan atau alpha lebih dari tiga hari dalam sebulan,30
+44,Punishment,siswa membuat coretan atau gambar pada pakaian tas lingkungan sekolah atau tempat umum,30
+45,Punishment,siswa memakai aksesoris terlarang seperti jaket sweater topi gelang sabuk kalung perhiasan,15
+46,Punishment,siswa berpakaian seragam dengan ukuran bahan atau potongan tidak sesuai ketentuan,15
+47,Punishment,siswa membawa rokok ke sekolah,15
+48,Punishment,siswa memakai pakaian yang tidak sesuai dengan ketentuan hari yang berlaku,15
+49,Punishment,siswa tidak mengikuti upacara bendera atau kegiatan pagi siang tanpa alasan,15
+50,Punishment,siswa tidak memakai pakaian praktik selama melaksanakan pelajaran praktik,15
+51,Punishment,siswa berpenampilan rambut gondrong rambut dicat tidak memakai atribut lengkap atau makeup berlebihan,15
+52,Punishment,siswa melompat benteng sekolah untuk masuk mengikuti pelajaran,15
+53,Punishment,siswa menyalahgunakan media sosial tidak sesuai peruntukan seperti konten foto video status chat kasar,15
+54,Punishment,siswa menghilangkan buku saku dan wajib mengganti yang baru,5
+55,Punishment,siswa tidak membawa buku saku saat pemeriksaan,5
+56,Punishment,siswa tidak masuk sekolah tanpa keterangan harian,5
+57,Punishment,siswa datang terlambat melewati pintu gerbang di atas jam tujuh lima belas,5
+58,Punishment,siswa keluar lingkungan sekolah saat jam istirahat tanpa izin piket,5
+59,Punishment,siswa buang sampah sembarangan tidak pada tempatnya,5
+60,Punishment,siswa membiarkan baju dikeluarkan dari celana atau rok,5
+61,Punishment,siswa berbicara kasar tidak sopan dan tidak senonoh,5
+62,Reward,siswa sukarela membersihkan kaca jendela kelas,10
+63,Reward,siswa menyapu dan mengepel lantai hingga bersih,10
+64,Reward,siswa merapikan peralatan piket setelah selesai digunakan,10
+65,Reward,siswa membuang sampah organik pada tempat yang benar,10
+66,Reward,siswa membantu menyiram tanaman di taman sekolah,10
+67,Reward,siswa berhasil meraih prestasi tingkat kecamatan melalui partisipasi aktif dan kemampuan baik dalam perlombaan,25
+68,Reward,siswa menunjukkan prestasi tingkat kecamatan dengan memperoleh penghargaan pada kegiatan lomba antar sekolah,25
+69,Reward,siswa memiliki prestasi tingkat kecamatan yang membanggakan dan membawa nama baik sekolah,25
+70,Reward,siswa aktif mengikuti kompetisi dan berhasil mendapatkan prestasi tingkat kecamatan,25
+71,Reward,siswa meraih prestasi tingkat kecamatan yang menunjukkan sikap disiplin kerja keras dan tanggung jawab,25
+72,Reward,siswa memperoleh prestasi tingkat kecamatan dalam perlombaan akademik maupun non akademik,25
+73,Reward,siswa memperoleh prestasi tingkat kabupaten dalam perlombaan pramuka dengan meraih juara dua,50
+74,Reward,siswa berhasil meraih prestasi tingkat kabupaten pada ajang perlombaan pramuka dengan juara dua,50
+75,Reward,siswa mendapatkan prestasi tingkat kabupaten dalam kegiatan lomba pramuka sebagai juara dua,50
+76,Reward,siswa menorehkan prestasi tingkat kabupaten pada perlombaan pramuka tingkat kabupaten juara dua,50
+77,Reward,siswa memperoleh prestasi tingkat provinsi dalam perlombaan pramuka tingkat provinsi juara dua,75
+78,Reward,siswa berhasil meraih prestasi tingkat provinsi pada kegiatan perlombaan pramuka juara dua,75
+79,Reward,siswa mendapatkan penghargaan prestasi tingkat provinsi dalam lomba pramuka perolehan juara dua,75
+80,Reward,siswa menunjukkan prestasi membanggakan pada perlombaan pramuka tingkat provinsi meraih juara dua,75
+81,Reward,siswa sangat aktif bertanya saat proses pembelajaran berlangsung,20
+82,Reward,siswa aktif mengikuti jalannya diskusi di dalam kelas,20
+83,Reward,siswa selalu hadir tepat waktu di setiap jam pelajaran,20
+84,Reward,siswa bersedia membantu teman yang mengalami kesulitan belajar,20
+85,Reward,siswa rajin mengerjakan seluruh tugas yang diberikan oleh guru,20
+86,Reward,siswa berpartisipasi aktif dalam setiap kegiatan sekolah,20
+87,Reward,siswa aktif dalam kepengurusan organisasi sekolah,20
+88,Reward,siswa konsisten menjaga kebersihan dan kerapihan ruang kelas,20
+89,Reward,siswa selalu berbicara sopan dan santun kepada guru,20
+90,Reward,Siswa mengikuti pelaksanaan upacara bendera dengan tertib dan khidmat,20
+91,Reward,siswa selalu memakai atribut seragam sekolah secara lengkap,20
+92,Reward,siswa rajin membaca buku dan berkunjung ke perpustakaan,20
+93,Reward,siswa menjadi ketua kelompok yang bertanggung jawab dan baik,20
+94,Reward,siswa membantu guru menyiapkan peralatan kegiatan kelas,20
+95,Reward,siswa sangat aktif saat melakukan presentasi kelompok,20
+96,Reward,siswa berhasil mendapat nilai terbaik dan juara di kelas,20
+97,Reward,siswa selalu menerapkan sikap disiplin dalam belajar,20
+98,Reward,siswa memiliki rasa tanggung jawab penuh terhadap tugas harian,20
+99,Reward,siswa aktif mengikuti kegiatan ekstrakurikuler sekolah,20
+100,Reward,siswa menjadi teladan dan contoh bagi teman-temannya,20
+101,Reward,siswa berprestasi dalam ajang lomba yang diadakan sekolah,20
+102,Reward,siswa aktif mengikuti praktik pembelajaran di laboratorium,20
+103,Reward,siswa selalu menjaga kerapihan pakaian seragam sepanjang hari,20
+104,Reward,siswa datang lebih awal ke sekolah sebelum bel berbunyi,20
+105,Reward,siswa mampu menyelesaikan tugas tepat waktu sesuai tenggat,20
+106,Reward,siswa aktif memberikan ide dan saran saat diskusi kelompok,20
+107,Reward,siswa rajin mengikuti kegiatan literasi sekolah,20
+108,Reward,siswa memiliki sikap sopan santun serta etika yang baik,20
+109,Reward,siswa membantu menjaga kebersihan lingkungan sekolah,20
+110,Reward,siswa aktif dalam kegiatan sosial yang diadakan sekolah,20
+111,Reward,siswa menjadi figur inspiratif bagi Siswa lain di kelas,20
+112,Reward,siswa berinisiatif membantu teman yang sedang mengalami kesulitan,20
+113,Reward,siswa konsisten hadir di sekolah tanpa ada catatan alpha,20
+114,Reward,siswa aktif mengikuti seluruh kegiatan keagamaan di sekolah,20
+115,Reward,siswa menjadi anggota organisasi yang berdedikasi dan disiplin,20
+116,Reward,siswa berprestasi di bidang olahraga dan seni,20
+117,Reward,siswa berprestasi di bidang akademik sekolah,20
+118,Reward,siswa selalu menjaga ketertiban kelas saat jam pelajaran,20
+119,Reward,siswa aktif menjawab pertanyaan yang diajukan oleh guru,20
+120,Reward,siswa memiliki semangat dan motivasi belajar yang tinggi,20
+121,Reward,siswa mengikuti seluruh kegiatan sekolah dengan sangat baik,20
+122,Reward,siswa terpilih menjadi Siswa paling disiplin di sekolah,20
+123,Reward,siswa rajin mengikuti dan melaksanakan piket kelas,20
+124,Reward,siswa aktif berkontribusi dalam kerja kelompok,20
+125,Reward,siswa dikenal sebagai Siswa dengan perilaku dan budi pekerti baik,20
+126,Reward,siswa selalu menghormati guru dan menghargai sesama teman,20
+127,Reward,siswa aktif mengikuti seminar atau workshop sekolah,20
+128,Reward,siswa memiliki tanggung jawab tinggi terhadap tugas akademik dan praktik,20
+129,Reward,siswa aktif dalam kegiatan kepramukaan sekolah,20
+130,Reward,siswa membantu teman memahami materi pelajaran yang sulit,20
+131,Reward,siswa selalu menjaga nama baik dan citra sekolah,20
+132,Reward,siswa aktif dalam perlombaan antar kelas atau classmeeting,20
+133,Reward,siswa berhasil meraih peringkat atau juara kelas,20
+134,Reward,siswa menjadi Siswa dengan persentase kehadiran terbaik,20
+135,Reward,siswa rajin mengikuti pelatihan atau pembinaan sekolah,20
+136,Reward,siswa aktif memberikan solusi pemecahan masalah saat diskusi,20
+137,Reward,siswa dinobatkan menjadi Siswa teladan sekolah,20
+138,Reward,siswa aktif dalam kegiatan aksi kebersihan lingkungan sekolah,20
+139,Reward,siswa rajin mengumpulkan tugas harian tepat waktu,20
+140,Reward,siswa memiliki kemampuan komunikasi yang baik dan efektif,20
+141,Reward,siswa aktif dalam setiap agenda kegiatan kelas,20
+142,Reward,siswa mampu bekerja sama dengan baik di dalam tim,20
+143,Reward,siswa selalu bersikap jujur dalam ujian maupun keseharian,20
+144,Reward,siswa berani tampil percaya diri saat presentasi di depan kelas,20
+145,Reward,siswa memiliki komitmen dan dedikasi tinggi dalam pembelajaran,20
+146,Reward,siswa rajin latihan soal-soal dan ulasan materi secara mandiri,20
+147,Reward,siswa tekun belajar menghadapi pelaksanaan ujian sekolah,20
+148,Reward,siswa menunjukkan kerapihan rambut sesuai dengan regulasi sekolah,20
+149,Reward,siswa tertib berpakaian seragam sesuai dengan jadwal yang ditentukan,20
+150,Reward,siswa menampilkan penampilan sopan beretika di depan guru,20
+151,Reward,siswa memiliki kemampuan analisis dan berpikir kritis yang baik,20
+152,Reward,siswa memiliki pemahaman materi teori dan kompetensi praktik yang unggul,20
+153,Reward,siswa konsisten mempertahankan hasil belajar yang optimal,20

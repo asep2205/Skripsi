@@ -1,0 +1,157 @@
+# Jalankan ini jika modul belum terinstal
+!pip install Sastrawi
+
+import pandas as pd
+import numpy as np
+import re
+import os
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFactory
+
+# ==========================================
+# 1. LOAD DATASET ASLI (PROSES SINKRONISASI)
+# ==========================================
+
+# A. Load Master Point (Kamus Utama)
+df_master = pd.read_csv('Master Point.csv', header=None)
+df_master.columns = ['ID', 'Tipe', 'Keterangan_Nominal', 'Poin']
+print(f"✅ Berhasil memuat {len(df_master)} data dari 'Master Point.csv'")
+
+# B. Load Data Training (id_data, text_sample, label)
+df_training = pd.read_csv('Data Training.csv', header=None)
+
+# Sinkronisasi nama kolom Data Training agar sama dengan Master Point
+df_training.columns = ['ID', 'Keterangan_Nominal', 'Tipe']
+
+# Mengambil nilai 'Poin' dari Master Point berdasarkan kesamaan ID
+map_poin = df_master.set_index('ID')['Poin'].to_dict()
+df_training['Poin'] = df_training['ID'].map(map_poin)
+
+# Backup jika ada ID baru di data training yang belum punya poin, otomatis diberi 10 poin
+df_training['Poin'] = df_training['Poin'].fillna(10).astype(int)
+
+# Gabungkan Data Training ke dalam Bank Data Utama NLP
+df_master = pd.concat([df_master, df_training[['ID', 'Tipe', 'Keterangan_Nominal', 'Poin']]], ignore_index=True)
+print(f"✅ Berhasil menggabungkan 'Data Training.csv'. Total bank data NLP: {len(df_master)} baris.")
+
+# C. Load Data Siswa
+df_siswa = pd.read_csv('Data Siswa.csv', header=None)
+df_siswa.columns = ['id_col_csv', 'NIS', 'Nama', 'Kelas', 'col_unused_1', 'col_unused_2'] # Assigning explicit column names
+df_siswa['Nama_Upper'] = df_siswa['Nama'].str.upper().str.strip()
+print(f"✅ Berhasil memuat {len(df_siswa)} data dari 'Data Siswa.csv'\n")
+
+
+# ==========================================
+# 2. PREPROCESSING & TRAINING TF-IDF
+# ==========================================
+factory = StopWordRemoverFactory()
+stopword_remover = factory.create_stop_word_remover()
+
+def bersihkan_teks(teks):
+    if not isinstance(teks, str): return ""
+    teks = teks.lower()
+    teks = stopword_remover.remove(teks)
+    return teks
+
+df_master['Kata_Kunci_Bersih'] = df_master['Keterangan_Nominal'].apply(bersihkan_teks)
+vectorizer_master = TfidfVectorizer()
+tfidf_master = vectorizer_master.fit_transform(df_master['Kata_Kunci_Bersih'])
+
+
+# ==========================================
+# 3. FUNGSI UTAMA PROSES KALIMAT LENGKAP
+# ==========================================
+def proses_sistem_sekolah(kalimat_input):
+    print("=" * 70)
+    print(f"INPUT DARI GURU : '{kalimat_input}'")
+    print("-" * 70)
+
+    # Pemisahan Nama, Kelas, dan Laporan menggunakan Pola Kelas (Regex)
+    pola_kelas = r'\b(X|XI|XII|x|xi|xii)-[A-Za-z0-9-]+\b'
+    match = re.search(pola_kelas, kalimat_input)
+
+    if match:
+        kelas_input = match.group(0).upper()
+        start_idx, end_idx = match.span()
+        nama_input = kalimat_input[:start_idx].strip().upper()
+        laporan_perilaku = kalimat_input[end_idx:].strip()
+    else:
+        kelas_input = "TIDAK TERDETEKSI"
+        kata_kumpulan = kalimat_input.split()
+        nama_input = kata_kumpulan[0].upper() if len(kata_kumpulan) > 0 else "NN"
+        laporan_perilaku = " ".join(kata_kumpulan[1:])
+
+    # Pencarian otomatis ke database siswa berdasarkan nama input
+    siswa_ditemukan = df_siswa[df_siswa['Nama_Upper'].str.contains(nama_input, na=False, regex=False)]
+    if not siswa_ditemukan.empty:
+        nis_final = siswa_ditemukan.iloc[0]['NIS']
+        nama_final = siswa_ditemukan.iloc[0]['Nama']
+        kelas_final = siswa_ditemukan.iloc[0]['Kelas']
+        status_db = "TERVERIFIKASI"
+    else:
+        nis_final = "-"
+        nama_final = nama_input
+        kelas_final = kelas_input
+        status_db = "TIDAK DITEMUKAN"
+
+    print(f"🆔 NIS         : {nis_final}")
+    print(f"👤 NAMA SISWA   : {nama_final} ({status_db})")
+    print(f"🏫 KELAS        : {kelas_final}")
+    print(f"📝 TEKS PROSES  : '{laporan_perilaku}'")
+    print("-" * 70)
+
+    # Pemotongan Klausa Kalimat & Pencocokan NLP
+    klausa_list = re.split(r'\btapi\b|\btetapi\b|\bnamun\b|\bdan\b|\bserta\b|,', laporan_perilaku.lower())
+    total_reward = 0
+    total_punish = 0
+    rincian = []
+
+    for klausa in klausa_list:
+        klausa = klausa.strip()
+        if len(klausa) < 3: continue
+
+        klausa_clean = bersihkan_teks(klausa)
+        tfidf_input = vectorizer_master.transform([klausa_clean])
+
+        similarities = cosine_similarity(tfidf_input, tfidf_master).flatten()
+        best_match_idx = np.argmax(similarities)
+        best_score = similarities[best_match_idx]
+
+        if best_score > 0.1:
+            tipe = df_master.loc[best_match_idx, 'Tipe']
+            poin = df_master.loc[best_match_idx, 'Poin']
+            nominal_text = df_master.loc[best_match_idx, 'Keterangan_Nominal']
+
+            simbol = "+" if tipe == 'Reward' else "-"
+            rincian.append(f" -> [{tipe}] {nominal_text} ({simbol}{poin} Poin) | Akurasi Map: {best_score:.2f}")
+
+            if tipe == 'Reward': total_reward += poin
+            elif tipe == 'Punishment': total_punish += poin
+
+    print("--- RINCIAN DETEKSI NLP ---")
+    if rincian:
+        for r in rincian: print(r)
+    else:
+        print(" - Tidak ada aktivitas pelanggaran/prestasi yang cocok.")
+
+    net_poin = total_reward - total_punish
+    print("\n--- KESIMPULAN AKHIR SISTEM ---")
+
+    if net_poin > 0:
+        print(f"🎯 HASIL AKHIR : REWARD | POIN: +{net_poin}")
+    elif net_poin == 0 and len(rincian) > 0:
+        poin_akhir = total_reward  # Aturan Khusus Anda: Ambil poin asli Reward (Anti Poin 0)
+        print(f"🎯 HASIL AKHIR : REWARD (Skor Imbang -> Poin Diambil dari Reward: +{poin_akhir})")
+    elif net_poin < 0:
+        print(f"🎯 HASIL AKHIR : PUNISHMENT | POIN: {net_poin}")
+    else:
+        print(f"🎯 HASIL AKHIR : TIDAK TERKLASIFIKASI")
+    print("=" * 70 + "\n")
+
+# ==========================================
+# 4. UJI COBA KALIMAT
+# ==========================================
+# Pastikan nama siswa di bawah ini ada kemiripan dengan data di 'Data Siswa.csv' Anda
+laporan_guru = "Algam Risgi Sugirman XII-RPL-1 mencuri barang temannya"
+proses_sistem_sekolah(laporan_guru)
