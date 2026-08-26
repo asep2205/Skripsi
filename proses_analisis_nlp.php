@@ -28,7 +28,8 @@ if (isset($_POST['narasi_laporan']) && isset($_POST['id_siswa'])) {
     // UPLOAD FOTO BUKTI (WAJIB) - untuk membuktikan laporan yang dimaksud benar
     // =========================================================================
     $foto_final = "";
-    if (isset($_FILES['foto_bukti']) && $_FILES['foto_bukti']['error'] == 0) {
+    $status_upload = 'foto_wajib';
+    if (isset($_FILES['foto_bukti']) && $_FILES['foto_bukti']['error'] == UPLOAD_ERR_OK) {
         $folder_upload = 'uploads/bukti_laporan/';
         if (!is_dir($folder_upload)) {
             mkdir($folder_upload, 0755, true);
@@ -44,12 +45,18 @@ if (isset($_POST['narasi_laporan']) && isset($_POST['id_siswa'])) {
 
             if (move_uploaded_file($_FILES['foto_bukti']['tmp_name'], $path_tujuan)) {
                 $foto_final = $path_tujuan;
+            } else {
+                $status_upload = 'foto_gagal_simpan';
             }
+        } else {
+            $status_upload = 'foto_tidak_valid';
         }
+    } elseif (isset($_FILES['foto_bukti']) && $_FILES['foto_bukti']['error'] == UPLOAD_ERR_INI_SIZE) {
+        $status_upload = 'foto_terlalu_besar_server';
     }
 
     if (empty($foto_final)) {
-        header("location:input_laporan?pesan=foto_wajib");
+        header("location:input_laporan?pesan=$status_upload");
         exit();
     }
 
@@ -95,8 +102,15 @@ if (isset($_POST['narasi_laporan']) && isset($_POST['id_siswa'])) {
         2 => ["pipe", "w"]
     ];
 
-    // Otomatisasi path Python (dipertahankan dari kode asli)
-    $python_command = 'python';
+    // Tentukan interpreter Python yang tersedia. macOS modern menyediakan
+    // `python3` (bukan `python`) dan PATH Apache sering kali sangat terbatas.
+    $python_command = null;
+    foreach (['/usr/local/bin/python3', '/opt/homebrew/bin/python3', 'python3', 'python'] as $candidate) {
+        if ($candidate === 'python3' || $candidate === 'python' || is_executable($candidate)) {
+            $python_command = $candidate;
+            break;
+        }
+    }
     $user_profile = getenv('USERPROFILE');
     if ($user_profile) {
         $local_app_data_python = $user_profile . "\\AppData\\Local\\Programs\\Python";
@@ -114,7 +128,8 @@ if (isset($_POST['narasi_laporan']) && isset($_POST['id_siswa'])) {
         }
     }
 
-    $process = proc_open($python_command . ' nlp_engine.py', $descriptorspec, $pipes);
+    $script_python = __DIR__ . DIRECTORY_SEPARATOR . 'nlp_engine.py';
+    $process = proc_open(escapeshellarg($python_command) . ' ' . escapeshellarg($script_python), $descriptorspec, $pipes);
 
     if (is_resource($process)) {
         fwrite($pipes[0], json_encode($payload));
@@ -146,7 +161,9 @@ if (isset($_POST['narasi_laporan']) && isset($_POST['id_siswa'])) {
         $hasil_nlp['nis']         = $siswa_terpilih['nis'];
         $hasil_nlp['nama_siswa']  = $siswa_terpilih['nama_siswa'];
         $hasil_nlp['kelas']       = $siswa_terpilih['kelas'];
-        $hasil_nlp['status_db']  = "TERVERIFIKASI";
+        // Setiap laporan harus diverifikasi terlebih dahulu. Poin baru akan
+        // ditambahkan oleh proses persetujuan, bukan saat laporan dibuat.
+        $hasil_nlp['status_db']  = "PENDING";
         $hasil_nlp['foto']        = $foto_final;
 
         // Simpan ke session untuk ditampilkan di notifikasi halaman depan
@@ -179,21 +196,16 @@ if (isset($_POST['narasi_laporan']) && isset($_POST['id_siswa'])) {
         $akurasi_map = mysqli_real_escape_string($koneksi, $akurasi_map);
 
         // Simpan laporan lengkap dengan foto bukti ke tabel laporan_prilaku
-        $query_laporan = "INSERT INTO laporan_prilaku 
-            (id_siswa, id_user, teks_laporan, label_prediksi, kecocokan_kata, poin_didapat, akurasi_map, foto) 
-            VALUES ('$id_siswa_input', '$id_user', '$teks_laporan', '$label_prediksi', '$kecocokan_kata', '$poin_didapat', '$akurasi_map', '$foto_db')";
+        $query_laporan = "INSERT INTO laporan_prilaku
+            (id_siswa, id_user, teks_laporan, label_prediksi, kecocokan_kata, poin_didapat, akurasi_map, foto, status_verifikasi)
+            VALUES ('$id_siswa_input', '$id_user', '$teks_laporan', '$label_prediksi', '$kecocokan_kata', '$poin_didapat', '$akurasi_map', '$foto_db', 'pending')";
 
-        mysqli_query($koneksi, $query_laporan);
-
-        // Update total poin sistem lama
-        $query_update = "";
-        if ($total_reward >= $total_punish && $total_reward > 0) {
-            $query_update = "UPDATE siswa SET total_poin_reward = total_poin_reward + $total_reward WHERE id_siswa = '$id_siswa_input'";
-        } elseif ($total_punish > $total_reward) {
-            $query_update = "UPDATE siswa SET total_poin_punishment = total_poin_punishment + $total_punish WHERE id_siswa = '$id_siswa_input'";
-        }
-        if (!empty($query_update)) {
-            mysqli_query($koneksi, $query_update);
+        if (!mysqli_query($koneksi, $query_laporan)) {
+            if (!empty($foto_final) && file_exists($foto_final)) {
+                @unlink($foto_final);
+            }
+            header("location:input_laporan?pesan=gagal_simpan");
+            exit();
         }
 
         header("location:input_laporan?pesan=analisis_sukses");

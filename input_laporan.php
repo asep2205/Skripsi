@@ -139,13 +139,13 @@ if ($q_siswa) {
                 $total_reward = (int)$data['total_reward'];
                 $total_punish = (int)$data['total_punish'];
                 
-                // PERBAIKAN LOGIKA TAMPILAN KESIMPULAN: Menyesuaikan aturan simpan salah satu (eksklusif)
+                // Hasil klasifikasi hanya berupa calon poin; poin dihitung setelah disetujui.
                 if ($total_reward > $total_punish) {
-                    $kesimpulan_hasil = "REWARD | POIN: +$total_reward (Hanya poin reward dimasukkan ke DB)";
+                    $kesimpulan_hasil = "REWARD | CALON POIN: +$total_reward (Menunggu persetujuan)";
                 } elseif ($total_reward == $total_punish && $total_reward > 0) {
-                    $kesimpulan_hasil = "REWARD (Skor Imbang - Diprioritaskan) | POIN: +$total_reward (Hanya poin reward dimasukkan ke DB)";
+                    $kesimpulan_hasil = "REWARD (Skor Imbang - Diprioritaskan) | CALON POIN: +$total_reward (Menunggu persetujuan)";
                 } elseif ($total_punish > $total_reward) {
-                    $kesimpulan_hasil = "PUNISHMENT | POIN: -$total_punish (Hanya poin punishment dimasukkan ke DB)";
+                    $kesimpulan_hasil = "PUNISHMENT | CALON POIN: -$total_punish (Menunggu persetujuan)";
                 } else {
                     $kesimpulan_hasil = "TIDAK ADA AKSI | POIN: 0";
                 }
@@ -280,6 +280,12 @@ INPUT DARI GURU : '<?= htmlspecialchars($data['input_guru']) ?>'
     fotoInput.addEventListener('change', function() {
         const file = this.files[0];
         if (file) {
+            const batasUkuran = 5 * 1024 * 1024;
+            if (file.size > batasUkuran) {
+                fotoInput.value = '';
+                Swal.fire('Ukuran Foto Terlalu Besar', 'Ukuran foto bukti maksimal 5 MB.', 'warning');
+                return;
+            }
             const reader = new FileReader();
             reader.onload = e => {
                 previewFoto.src = e.target.result;
@@ -345,6 +351,12 @@ INPUT DARI GURU : '<?= htmlspecialchars($data['input_guru']) ?>'
         Swal.fire('Gagal', 'Siswa yang dipilih tidak valid, silakan coba lagi.', 'error');
         <?php elseif ($_GET['pesan'] == 'foto_wajib'): ?>
         Swal.fire('Gagal', 'Foto bukti wajib diunggah (format JPG/PNG/WEBP, maks 5MB).', 'error');
+        <?php elseif ($_GET['pesan'] == 'foto_tidak_valid'): ?>
+        Swal.fire('Gagal', 'Format foto harus JPG, JPEG, PNG, atau WEBP dan ukurannya maksimal 5MB.', 'error');
+        <?php elseif ($_GET['pesan'] == 'foto_gagal_simpan'): ?>
+        Swal.fire('Gagal', 'Foto berhasil diterima tetapi gagal disimpan di server. Silakan coba kembali.', 'error');
+        <?php elseif ($_GET['pesan'] == 'foto_terlalu_besar_server'): ?>
+        Swal.fire('Gagal', 'Ukuran foto melebihi batas upload server.', 'error');
         <?php elseif ($_GET['pesan'] == 'data_tidak_lengkap'): ?>
         Swal.fire('Gagal', 'Siswa dan deskripsi kejadian wajib diisi.', 'error');
         <?php endif; ?>

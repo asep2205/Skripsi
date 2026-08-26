@@ -278,6 +278,18 @@ $role_user = $_SESSION['role']; // Mengambil role: Admin, Guru, BK, atau Kepsek
         <div class="col-6 col-sm-6 col-md-4 col-lg-3">
             <div class="card premium-menu-card h-100 p-3 text-center">
                 <div class="card-body p-0 d-flex flex-column align-items-center">
+                    <div class="icon-premium-box bg-warning-subtle text-warning shadow-inner">
+                        <i class="bi bi-clipboard-check"></i>
+                    </div>
+                    <h6 class="menu-title-premium">Verifikasi Laporan</h6>
+                    <a href="verifikasi_laporan" class="stretched-link"></a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-sm-6 col-md-4 col-lg-3">
+            <div class="card premium-menu-card h-100 p-3 text-center">
+                <div class="card-body p-0 d-flex flex-column align-items-center">
                     <div class="icon-premium-box bg-danger-subtle text-danger shadow-inner" style="background-color: #f3e8ff !important; color: #7c3aed !important;">
                         <i class="bi bi-trophy"></i>
                     </div>

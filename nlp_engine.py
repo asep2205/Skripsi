@@ -3,7 +3,23 @@ import json
 import re
 import math
 from collections import Counter
-from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFactory
+try:
+    from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFactory
+except ImportError:
+    # Aplikasi tetap dapat berjalan saat package Sastrawi belum terpasang,
+    # misalnya pada instalasi Python baru di macOS/XAMPP.
+    class StopWordRemoverFactory:
+        def create_stop_word_remover(self):
+            stopwords = {
+                'yang', 'dan', 'di', 'ke', 'dari', 'untuk', 'dengan', 'pada',
+                'sebagai', 'oleh', 'atau', 'karena', 'dalam', 'ini', 'itu', 'sebuah'
+            }
+
+            class SimpleStopWordRemover:
+                def remove(self, text):
+                    return ' '.join(word for word in text.split() if word not in stopwords)
+
+            return SimpleStopWordRemover()
 
 def hitung_idf(corpus):
     N = len(corpus)

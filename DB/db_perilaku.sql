@@ -824,6 +824,10 @@ CREATE TABLE `laporan_prilaku` (
   `poin_didapat` int(11) NOT NULL,
   `akurasi_map` text NOT NULL,
   `foto` text NOT NULL,
+  `status_verifikasi` enum('pending','disetujui','ditolak') NOT NULL DEFAULT 'pending',
+  `id_verifikator` int(11) DEFAULT NULL,
+  `tgl_verifikasi` timestamp NULL DEFAULT NULL,
+  `catatan_verifikasi` text DEFAULT NULL,
   `tgl_input` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 

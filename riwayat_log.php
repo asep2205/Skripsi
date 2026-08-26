@@ -129,6 +129,7 @@ $q_hari = "SELECT
                 SUM(CASE WHEN LOWER(lp.label_prediksi) = 'punishment' THEN 1 ELSE 0 END) AS total_punishment
             FROM laporan_prilaku lp
             LEFT JOIN siswa s ON lp.id_siswa = s.id_siswa
+            WHERE lp.status_verifikasi = 'disetujui'
             GROUP BY DATE(lp.tgl_input), s.kelas
             ORDER BY lp.tgl_input ASC";
 $res_hari = mysqli_query($koneksi, $q_hari);
@@ -146,6 +147,7 @@ $q_minggu = "SELECT
                 SUM(CASE WHEN LOWER(lp.label_prediksi) = 'punishment' THEN 1 ELSE 0 END) AS total_punishment
             FROM laporan_prilaku lp
             LEFT JOIN siswa s ON lp.id_siswa = s.id_siswa
+            WHERE lp.status_verifikasi = 'disetujui'
             GROUP BY YEARWEEK(lp.tgl_input, 1), s.kelas
             ORDER BY lp.tgl_input ASC";
 $res_minggu = mysqli_query($koneksi, $q_minggu);
@@ -163,6 +165,7 @@ $q_bulan = "SELECT
                 SUM(CASE WHEN LOWER(lp.label_prediksi) = 'punishment' THEN 1 ELSE 0 END) AS total_punishment
             FROM laporan_prilaku lp
             LEFT JOIN siswa s ON lp.id_siswa = s.id_siswa
+            WHERE lp.status_verifikasi = 'disetujui'
             GROUP BY DATE_FORMAT(lp.tgl_input, '%Y-%m'), s.kelas
             ORDER BY lp.tgl_input ASC";
 $res_bulan = mysqli_query($koneksi, $q_bulan);
@@ -180,6 +183,7 @@ $q_semester = "SELECT
                     SUM(CASE WHEN LOWER(lp.label_prediksi) = 'punishment' THEN 1 ELSE 0 END) AS total_punishment
                 FROM laporan_prilaku lp
                 LEFT JOIN siswa s ON lp.id_siswa = s.id_siswa
+                WHERE lp.status_verifikasi = 'disetujui'
                 GROUP BY CASE WHEN MONTH(lp.tgl_input) BETWEEN 7 AND 12 THEN 'Ganjil' ELSE 'Genap' END, YEAR(lp.tgl_input), s.kelas
                 ORDER BY lp.tgl_input ASC";
 $res_semester = mysqli_query($koneksi, $q_semester);
@@ -197,6 +201,7 @@ $q_tahun = "SELECT
                 SUM(CASE WHEN LOWER(lp.label_prediksi) = 'punishment' THEN 1 ELSE 0 END) AS total_punishment
             FROM laporan_prilaku lp
             LEFT JOIN siswa s ON lp.id_siswa = s.id_siswa
+            WHERE lp.status_verifikasi = 'disetujui'
             GROUP BY YEAR(lp.tgl_input), s.kelas
             ORDER BY periode ASC";
 $res_tahun = mysqli_query($koneksi, $q_tahun);
@@ -522,6 +527,7 @@ while($r = mysqli_fetch_assoc($res_tahun)) {
                         <th width="25%" class="py-3">Isi Laporan Kasus</th>
                         <th width="10%" class="text-center py-3">Foto Bukti</th>
                         <th width="10%" class="text-center py-3">Hasil Klasifikasi</th>
+                        <th width="8%" class="text-center py-3">Status</th>
                         <th width="10%" class="text-center py-3">Kecocokan %</th>
                         <th width="8%" class="text-center py-3">Poin</th>
                     </tr>
@@ -567,13 +573,23 @@ while($r = mysqli_fetch_assoc($res_tahun)) {
                                 <i class="bi <?= $icon_class; ?> me-1"></i><?= strtoupper($data['label_prediksi']); ?>
                             </span>
                         </td>
+                        <td class="text-center">
+                            <?php $status_laporan = $data['status_verifikasi'] ?? 'disetujui'; ?>
+                            <span class="badge text-bg-<?= $status_laporan === 'pending' ? 'warning' : ($status_laporan === 'disetujui' ? 'success' : 'danger'); ?>">
+                                <?= strtoupper(htmlspecialchars($status_laporan)); ?>
+                            </span>
+                        </td>
                         <td class="text-center text-dark fw-bold font-monospace small"><?= $data['akurasi_map'] ?? '0.00'; ?></td>
-                        <td class="text-center"><span class="badge <?= $poin_badge; ?> px-2 py-1 fw-bold"><?= $poin_sign . $data['poin_didapat']; ?></span></td>
+                        <td class="text-center">
+                            <?php if ($status_laporan === 'disetujui'): ?>
+                                <span class="badge <?= $poin_badge; ?> px-2 py-1 fw-bold"><?= $poin_sign . $data['poin_didapat']; ?></span>
+                            <?php else: ?><span class="text-muted small">Belum dihitung</span><?php endif; ?>
+                        </td>
                     </tr>
                     <?php 
                         }
                     } else { 
-                        echo '<tr><td colspan="8" class="text-center text-muted py-5">Data tidak ditemukan.</td></tr>';
+                        echo '<tr><td colspan="9" class="text-center text-muted py-5">Data tidak ditemukan.</td></tr>';
                     } 
                     ?>
                 </tbody>
